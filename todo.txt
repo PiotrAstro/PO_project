@@ -1,0 +1,9 @@
+-logowanie użytkownika (userzy w bazie z ręki), klient, restauracja, dostawca, gosc
+-dla każdego usera panel z funkcjonanosciami
+-browsing recipies dla panelu klienta i goscia (wyszukiwanie LIKE, konwersja do lowercase?), wyswietlenie przepisow
+-w panelu klienta opcja manage your reviews
+-w panelu klienta opcja recipe management z opcjami edycji, usunięcia i dodania nowego przepisu
+-w panelu klienta opcja order: wybranie przepisu/przepisów, uzupełnienie danych, stworzenie requestu, przeglądanie ofert (możliwosc akceptacji)
+-w panelu restauracji przeglądanie requestów, mozliwosc wystawienia oferty w odpowiedzi na request, przeglanie ofert (zaakceptowanych i oczekujących), przypisanie zamówienia dostawcy w przypadku dostawy
+-w panelu restauracji zmiana statusu zamówienia
+-w panelu dostawcy możliwosc przegladania przypisanych dostaw i zmiany ich statusu
