@@ -9,3 +9,4 @@ RUN_CONFIG = {
 class Config:
     SQLALCHEMY_DATABASE_URI = 'postgresql://username:password@localhost:5432/mydatabase'  # Replace with actual credentials
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = "fgtershbgdrfhnyt"
