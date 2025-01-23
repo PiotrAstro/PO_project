@@ -4,11 +4,13 @@ import enum
 
 db = SQLAlchemy()
 
+
 # Enums
 class DeliveryStatus(enum.Enum):
     Delivered = "Delivered"
     InDelivery = "InDelivery"
     Waiting = "Waiting"
+
 
 class OrderStatus(enum.Enum):
     InPreparation = "InPreparation"
@@ -17,10 +19,12 @@ class OrderStatus(enum.Enum):
     InDelivery = "InDelivery"
     Delivered = "Delivered"
 
+
 class PaymentStatus(enum.Enum):
     Waiting = "Waiting"
     Completed = "Completed"
     Declined = "Declined"
+
 
 # Association Tables
 restaurant_deliverer = db.Table(
@@ -41,6 +45,7 @@ recipe_request = db.Table(
     db.Column('recipe_id', db.Integer, db.ForeignKey('Recipe.id', ondelete='CASCADE'), primary_key=True),
     db.Column('request_id', db.Integer, db.ForeignKey('Request.id', ondelete='CASCADE'), primary_key=True)
 )
+
 
 # Models
 class Client(db.Model, UserMixin):
@@ -63,7 +68,8 @@ class Client(db.Model, UserMixin):
     restaurant_reviews = db.relationship('RestaurantReview', backref='client', lazy='dynamic')
 
     def get_id(self):
-       return f"C{self.id}"
+        return f"C{self.id}"
+
 
 class Request(db.Model):
     __tablename__ = 'Request'
@@ -78,6 +84,7 @@ class Request(db.Model):
     recipes = db.relationship('Recipe', secondary=recipe_request, backref='requests', lazy='dynamic')
     offers = db.relationship('Offer', backref='request', lazy='dynamic')
 
+
 class RecipeType(db.Model):
     __tablename__ = 'RecipeType'
 
@@ -86,6 +93,7 @@ class RecipeType(db.Model):
 
     # Relationships
     recipes = db.relationship('Recipe', backref='recipe_type', lazy='dynamic')
+
 
 class Recipe(db.Model):
     __tablename__ = 'Recipe'
@@ -102,11 +110,13 @@ class Recipe(db.Model):
     ingredients = db.relationship('Ingredient', secondary=recipe_ingredients, backref='recipes', lazy='dynamic')
     reviews = db.relationship('RecipeReview', backref='recipe', lazy='dynamic')
 
+
 class Ingredient(db.Model):
     __tablename__ = 'Ingredient'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True, nullable=False)
+
 
 class RecipeReview(db.Model):
     __tablename__ = 'RecipeReview'
@@ -116,6 +126,7 @@ class RecipeReview(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     description = db.Column(db.Text, nullable=False)
 
+
 class RestaurantReview(db.Model):
     __tablename__ = 'RestaurantReview'
 
@@ -123,6 +134,7 @@ class RestaurantReview(db.Model):
     restaurant_id = db.Column(db.Integer, db.ForeignKey('Restaurant.id', ondelete='CASCADE'), primary_key=True)
     rating = db.Column(db.Integer, nullable=False)
     description = db.Column(db.Text)
+
 
 class Deliverer(db.Model, UserMixin):
     __tablename__ = 'Deliverer'
@@ -138,8 +150,10 @@ class Deliverer(db.Model, UserMixin):
     # Relationships
     deliveries = db.relationship('Delivery', backref='deliverer', lazy='dynamic')
     restaurants = db.relationship('Restaurant', secondary=restaurant_deliverer, backref='deliverers', lazy='dynamic')
+
     def get_id(self):
-       return f"D{self.id}"  # Prefix with D for Deliverer
+        return f"D{self.id}"  # Prefix with D for Deliverer
+
 
 class Restaurant(db.Model, UserMixin):
     __tablename__ = 'Restaurant'
@@ -155,8 +169,10 @@ class Restaurant(db.Model, UserMixin):
     # Relationships
     offers = db.relationship('Offer', backref='restaurant', lazy='dynamic')
     reviews = db.relationship('RestaurantReview', backref='restaurant', lazy='dynamic')
+
     def get_id(self):
-       return f"R{self.id}"  # Prefix with D for Deliverer
+        return f"R{self.id}"  # Prefix with D for Deliverer
+
 
 class Orders(db.Model):
     __tablename__ = 'Orders'
@@ -170,6 +186,7 @@ class Orders(db.Model):
     delivery = db.relationship('Delivery', backref='order', uselist=False, lazy='select')
     payment = db.relationship('Payment', backref='order', uselist=False, lazy='select')
 
+
 class Delivery(db.Model):
     __tablename__ = 'Delivery'
 
@@ -179,6 +196,7 @@ class Delivery(db.Model):
     deliveryStatus = db.Column(db.Enum(DeliveryStatus), nullable=False)
     deliveryDue = db.Column(db.DateTime, nullable=False)
     deliveryTime = db.Column(db.DateTime, nullable=False)
+
 
 class Offer(db.Model):
     __tablename__ = 'Offer'
@@ -190,6 +208,7 @@ class Offer(db.Model):
     price = db.Column(db.Float, nullable=False)
     notes = db.Column(db.Text)
     waitingTime = db.Column(db.Time, nullable=False)
+
 
 class Payment(db.Model):
     __tablename__ = 'Payment'
