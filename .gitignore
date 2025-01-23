@@ -1,3 +1,3 @@
 venv
-*/pychache/*
+*__pycache__*
 config.py
