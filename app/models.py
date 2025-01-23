@@ -1,3 +1,4 @@
+from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 import enum
 
@@ -42,7 +43,7 @@ recipe_request = db.Table(
 )
 
 # Models
-class Client(db.Model):
+class Client(db.Model, UserMixin):
     __tablename__ = 'Client'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -51,11 +52,18 @@ class Client(db.Model):
     name = db.Column(db.String, nullable=False)
     surname = db.Column(db.String, nullable=False)
 
+    # add login and password, make login unique
+    login = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, nullable=False)
+
     # Relationships
     requests = db.relationship('Request', backref='client', lazy='dynamic')
     recipes = db.relationship('Recipe', backref='client', lazy='dynamic')
     recipe_reviews = db.relationship('RecipeReview', backref='client', lazy='dynamic')
     restaurant_reviews = db.relationship('RestaurantReview', backref='client', lazy='dynamic')
+
+    def get_id(self):
+       return f"C{self.id}"
 
 class Request(db.Model):
     __tablename__ = 'Request'
@@ -116,27 +124,39 @@ class RestaurantReview(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     description = db.Column(db.Text)
 
-class Deliverer(db.Model):
+class Deliverer(db.Model, UserMixin):
     __tablename__ = 'Deliverer'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     surname = db.Column(db.String, nullable=False)
 
+    # add login and password, make login unique
+    login = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, nullable=False)
+
     # Relationships
     deliveries = db.relationship('Delivery', backref='deliverer', lazy='dynamic')
     restaurants = db.relationship('Restaurant', secondary=restaurant_deliverer, backref='deliverers', lazy='dynamic')
+    def get_id(self):
+       return f"D{self.id}"  # Prefix with D for Deliverer
 
-class Restaurant(db.Model):
+class Restaurant(db.Model, UserMixin):
     __tablename__ = 'Restaurant'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     address = db.Column(db.String, nullable=False)
 
+    # add login and password, make login unique
+    login = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, nullable=False)
+
     # Relationships
     offers = db.relationship('Offer', backref='restaurant', lazy='dynamic')
     reviews = db.relationship('RestaurantReview', backref='restaurant', lazy='dynamic')
+    def get_id(self):
+       return f"R{self.id}"  # Prefix with D for Deliverer
 
 class Orders(db.Model):
     __tablename__ = 'Orders'
@@ -170,9 +190,6 @@ class Offer(db.Model):
     price = db.Column(db.Float, nullable=False)
     notes = db.Column(db.Text)
     waitingTime = db.Column(db.Time, nullable=False)
-
-    # Relationships
-    order = db.relationship('Orders', backref='offer', uselist=False, lazy='select')
 
 class Payment(db.Model):
     __tablename__ = 'Payment'
