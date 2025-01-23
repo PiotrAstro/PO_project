@@ -1,4 +1,4 @@
-Mati -dla każdego usera panel z funkcjonanosciami (same Przyciski)
+Mati -dla każdego usera panel z funkcjonanosciami (same Przyciski) (done)
 -browsing recipies dla panelu klienta i goscia (wyszukiwanie LIKE, konwersja do lowercase?), wyswietlenie przepisow
 -w panelu klienta opcja manage your reviews
 -w panelu klienta opcja recipe management z opcjami edycji, usunięcia i dodania nowego przepisu
