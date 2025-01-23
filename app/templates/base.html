@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Map Application</title>
+    <title>Cookunity</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% block extra_head %}
+    {% endblock %}
 </head>
 <body>
     <div class="container">
-    <hr> {% block content %}{% endblock %}
+        <hr>
+        {% block content %}{% endblock %}
     </div>
 </body>
 </html>

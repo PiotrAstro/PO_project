@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="centered-container">
+        <h2>Choose the User Type</h2>
+        <div class="login-options">
+            <div class="login-option">
+                <button type="button" class="btn" onclick="window.location.href='{{ url_for('client.login') }}'">Client</button>
+            </div>
+            <div class="login-option">
+                <button type="button" class="btn" onclick="window.location.href='{{ url_for('restaurant.login') }}'">Restaurant</button>
+            </div>
+            <div class="login-option">
+                <button type="button" class="btn" onclick="window.location.href='{{ url_for('deliverer.login') }}'">Deliverer</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

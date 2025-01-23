@@ -1,26 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Login</h2>
-    <form action="" method="post">
-        <!-- {{ form.hidden_tag() }} -->
-        {{ form.csrf_token }}
-        <div class="input-group">
-            <div class="input-with-button">
-                <div class="label-wrapper">
-                    <label for="username">{{ form.username.label }}</label>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form action="" method="post">
+            {{ form.csrf_token }}
+            <div class="input-group">
+                <div class="input-with-button">
+                    <div class="label-wrapper">
+                        <label for="username">{{ form.username.label }}</label>
+                    </div>
+                    {{ form.username(size=32, class="address-input") }}
                 </div>
-                {{ form.username(size=32, class="address-input") }}
             </div>
-        </div>
-        <div class="input-group">
-            <div class="input-with-button">
-                <div class="label-wrapper">
-                    <label for="password">{{ form.password.label }}</label>
+            <div class="input-group">
+                <div class="input-with-button">
+                    <div class="label-wrapper">
+                        <label for="password">{{ form.password.label }}</label>
+                    </div>
+                    {{ form.password(size=32, class="address-input", type="password") }}
                 </div>
-                {{ form.password(size=32, class="address-input", type="password") }}
             </div>
-        </div>
-        {{ form.submit(class="submit-button") }}
-    </form>
+            {{ form.submit(class="submit-button") }}
+        </form>
+    </div>
 {% endblock %}
