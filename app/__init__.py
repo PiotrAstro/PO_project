@@ -32,7 +32,7 @@ def create_app(config_class=Config):
     
 
     # # Register blueprints
-    from app.restaurant.routes import restauant_bp
+    from app.restaurant.routes import restaurant_bp
     from app.client.routes import client_bp
     from app.deliverer.routes import deliverer_bp
     from app.main.routes import main_bp
@@ -40,7 +40,7 @@ def create_app(config_class=Config):
     app.register_blueprint(client_bp)
     app.register_blueprint(deliverer_bp)
     app.register_blueprint(main_bp)
-    app.register_blueprint(restauant_bp)
+    app.register_blueprint(restaurant_bp)
 
     login_manager.init_app(app)
 
