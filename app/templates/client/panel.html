@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
+{% endblock %}
+
+{% block content %}
+    <h2 class="panel-title">Client Panel</h2>
+    <div class="button-container">
+        <button class="panel-button">Manage Reviews</button>
+        <button class="panel-button">Manage Recipes</button>
+        <button class="panel-button">Order</button>
+    </div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/restaurant.css') }}">
+{% endblock %}
+
+{% block content %}
+    <h2 class="panel-title">Restaurant Panel</h2>
+    <div class="button-container">
+        <button class="panel-button">Browse Requests</button>
+        <button class="panel-button">Browse Offers</button>
+    </div>
+{% endblock %}

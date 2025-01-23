@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/deliverer.css') }}">
+{% endblock %}
+
+{% block content %}
+    <h2 class="panel-title">Deliverer Panel</h2>
+    <div class="button-container">
+        <button class="panel-button">Browse Deliveries</button>
+    </div>
+{% endblock %}
