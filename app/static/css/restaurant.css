@@ -39,3 +39,25 @@ th, td {
     text-align: left;
     border: 1px solid #ddd;
 }
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+}
+
+form label {
+    font-weight: bold;
+}
+
+form textarea, 
+form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+form button {
+    margin-top: 15px;
+}

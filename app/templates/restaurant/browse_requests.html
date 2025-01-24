@@ -40,5 +40,7 @@
         <p>No pending requests available.</p>
     {% endif %}
 
-    <a href="{{ url_for('restaurant.panel') }}">Back to Panel</a>
+    <a href="{{ url_for('restaurant.panel') }}">
+        <button class="panel-button">Back to Panel</button>
+    </a>
 {% endblock %}

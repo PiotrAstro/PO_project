@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
+{% endblock %}
+
+{% block content %}
+    <h2 class="panel-title">Edit Recipe</h2>
+
+    <form class="client-recipes-form" method="POST" action="{{ url_for('client.edit_recipe', recipe_id=recipe.id) }}">
+
+        <label for="name">Recipe Name:</label>
+        <input type="text" id="name" name="name" value="{{ recipe.name }}" required>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required>{{ recipe.description }}</textarea>
+
+        <label for="recipeSteps">Recipe Steps:</label>
+        <textarea id="recipeSteps" name="recipeSteps" required>{{ recipe.recipesteps }}</textarea>
+
+        <label for="recipe_type_id">Recipe Type:</label>
+        <select id="recipe_type_id" name="recipe_type_id">
+            {% for type in recipe_types %}
+                <option value="{{ type.id }}" {% if type.id == recipe.recipe_type_id %}selected{% endif %}>
+                    {{ type.type }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <h3>Ingredients</h3>
+        <div id="ingredients-container">
+            {% for ingredient in recipe_ingredients %}
+            <div>
+                <label for="ingredient_ids">Ingredient:</label>
+                <select name="ingredient_ids[]" required>
+                    {% for ing in ingredients %}
+                        <option value="{{ ing.id }}" {% if ing.id == ingredient.ingredient_id %}selected{% endif %}>
+                            {{ ing.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <label for="quantities">Quantity:</label>
+                <input type="text" name="quantities[]" value="{{ ingredient.quantity }}" required>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" onclick="addIngredient()" class="client-recipes-panel-button">Add Another Ingredient</button>
+        <button type="button" onclick="removeIngredient()" class="client-recipes-panel-button">Remove Ingredient</button>
+        <button class="panel-button" type="submit">Save Changes</button>
+    </form>
+
+    <script>
+        function addIngredient() {
+            const container = document.getElementById('ingredients-container');
+            const newIngredient = container.children[0].cloneNode(true);
+            const inputs = newIngredient.querySelectorAll('input, select');
+            inputs.forEach(input => input.value = '');
+            container.appendChild(newIngredient);
+        }
+
+        function removeIngredient() {
+            const container = document.getElementById('ingredients-container');
+            if (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
+        }
+    </script>
+
+    <a href="{{ url_for('client.manage_recipes') }}">
+        <button class="panel-button">Back to Panel</button>
+    </a>
+{% endblock %}

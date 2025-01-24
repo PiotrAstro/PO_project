@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
+{% endblock %}
+
+{% block content %}
+    <h2 class="panel-title">Manage Recipes</h2>
+
+    <div class="button-container">
+        <a href="{{ url_for('client.add_recipe') }}">
+            <button class="panel-button">Add Recipe</button>
+        </a>
+    </div>
+
+    <table class="client-recipes-table">
+        <thead>
+            <tr>
+                <th class="client-recipes-table-header">Recipe Name</th>
+                <th class="client-recipes-table-header">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for recipe in recipes %}
+            <tr>
+                <td class="client-recipes-table-cell">{{ recipe.name }}</td>
+                <td class="client-recipes-table-cell">
+                    <a href="{{ url_for('client.view_recipe', recipe_id=recipe.id) }}">
+                        <button class="panel-button">View</button>
+                    </a>
+                    <a href="{{ url_for('client.edit_recipe', recipe_id=recipe.id) }}">
+                        <button class="panel-button">Edit</button>
+                    </a>
+                    <form method="POST" action="{{ url_for('client.remove_recipe', recipe_id=recipe.id) }}" style="display:inline;">
+                        <button type="submit" class="panel-button">Remove</button>
+                    </form>
+                </td>
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('client.panel') }}">
+        <button class="panel-button">Back to Panel</button>
+    </a>
+{% endblock %}
