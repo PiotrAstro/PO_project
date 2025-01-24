@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 10px;
+    }
+    
+    .column {
+        padding: 10px;
+        border: 1px solid #ddd;
+    }
+    
+    .scroll-container {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .checkbox-item {
+        margin-bottom: 5px;
+    }
+
+    .submit-container {
+        text-align: center;
+        margin-top: 10px;
+    }
+</style>
+
+<form method="GET" action="{{ goto }}">
+    <div class="grid-container">
+        <!-- Column 1: Recipe Name -->
+        <div class="column">
+            <h3>Recipe Search</h3>
+            <div>
+                <label for="name">Recipe Name</label>
+                <input type="text" id="name" name="name" value="{{ recepie_name }}">
+            </div>
+        </div>
+
+        <!-- Column 2: Include Ingredients -->
+        <div class="column">
+            <h3>Include Ingredients</h3>
+            <div class="scroll-container">
+                {% for ingredient in all_ingredients %}
+                <div class="checkbox-item">
+                    <input type="checkbox" 
+                           id="include_{{ ingredient.id }}" 
+                           name="include" 
+                           value="{{ ingredient.id }}"
+                           {% if ingredient.id in recepie_include %}checked{% endif %}>
+                    <label for="include_{{ ingredient.id }}">{{ ingredient.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Column 3: Exclude Ingredients -->
+        <div class="column">
+            <h3>Exclude Ingredients</h3>
+            <div class="scroll-container">
+                {% for ingredient in all_ingredients %}
+                <div class="checkbox-item">
+                    <input type="checkbox" 
+                           id="exclude_{{ ingredient.id }}" 
+                           name="exclude" 
+                           value="{{ ingredient.id }}"
+                           {% if ingredient.id in recepie_exclude %}checked{% endif %}>
+                    <label for="exclude_{{ ingredient.id }}">{{ ingredient.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Column 4: Categories -->
+        <div class="column">
+            <h3>Categories</h3>
+            <div class="scroll-container">
+                {% for category in all_recepie_types %}
+                <div class="checkbox-item">
+                    <input type="checkbox" 
+                           id="category_{{ category.id }}" 
+                           name="categories" 
+                           value="{{ category.id }}"
+                           {% if category.id in recepie_categories %}checked{% endif %}>
+                    <label for="category_{{ category.id }}">{{ category.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="submit-container">
+        <button type="submit">Search Recipes</button>
+    </div>
+</form>
+{% endblock %}

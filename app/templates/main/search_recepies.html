@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .recipes-container {
+        padding: 10px;
+    }
+    
+    .recipe-card {
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+        padding: 10px;
+    }
+
+    .recipe-image {
+        max-width: 200px;
+    }
+
+    .recipe-details {
+        margin: 10px 0;
+    }
+
+    .ingredients-list {
+        margin: 10px 0;
+    }
+</style>
+
+<div class="recipes-container">
+    <a href="{{ goback }}">Back to Search</a>
+    
+    <h2>Search Results</h2>
+
+    {% if recepies %}
+        {% for recipe in recepies %}
+        <div class="recipe-card">
+            <img class="recipe-image" src="{{ url_for('static', filename='images/' + recipe.image_name) }}" alt="{{ recipe.name }}">
+            
+            <div class="recipe-details">
+                <h3>{{ recipe.name }}</h3>
+                <p>Type: {{ recipe.recipe_type.name }}</p>
+                <p>{{ recipe.description }}</p>
+                
+                <div class="ingredients-list">
+                    <h4>Ingredients:</h4>
+                    <ul>
+                    {% for ingredient in recipe.ingredients %}
+                        <li>{{ ingredient.name }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="recipe-steps">
+                    <h4>Steps:</h4>
+                    <p>{{ recipe.recipeSteps }}</p>
+                </div>
+
+                {% if recipe.reviews.count() > 0 %}
+                <div class="recipe-reviews">
+                    <h4>Reviews:</h4>
+                    <p>Average rating: {{ recipe.reviews.with_entities(func.avg(RecipeReview.rating)).scalar()|round(1) }}/5</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No recipes found matching your criteria.</p>
+    {% endif %}
+</div>
+{% endblock %}
