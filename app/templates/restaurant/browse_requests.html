@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/restaurant.css') }}">
+{% endblock %}
+
+{% block content %}
+    <h2>Browse Requests</h2>
+
+    {% if requests %}
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Client ID</th>
+                    <th>With Delivery</th>
+                    <th>Address</th>
+                    <th>Electronic Payment</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.client_id }}</td>
+                    <td>{{ 'Yes' if request.withDelivery else 'No' }}</td>
+                    <td>{{ request.address }}</td>
+                    <td>{{ 'Yes' if request.electronicPayment else 'No' }}</td>
+                    <td>
+                        <a href="{{ url_for('restaurant.make_offer', request_id=request.id) }}">
+                            <button class="panel-button">Make Offer</button>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No pending requests available.</p>
+    {% endif %}
+
+    <a href="{{ url_for('restaurant.panel') }}">Back to Panel</a>
+{% endblock %}
