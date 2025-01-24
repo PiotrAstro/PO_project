@@ -204,7 +204,6 @@ class Offer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     request_id = db.Column(db.Integer, db.ForeignKey('Request.id', ondelete='RESTRICT'), nullable=False)
     restaurant_id = db.Column(db.Integer, db.ForeignKey('Restaurant.id', ondelete='RESTRICT'), nullable=False)
-    order_id = db.Column(db.Integer, db.ForeignKey('Orders.id', ondelete='RESTRICT'), nullable=False)
     price = db.Column(db.Float, nullable=False)
     notes = db.Column(db.Text)
     waitingTime = db.Column(db.Time, nullable=False)
