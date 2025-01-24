@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
+{% endblock %}
+
+{% block content %}
+    <h2 class="panel-title">Recipe: {{ recipe.name }}</h2>
+
+    <div class="client-recipes-details">
+        <p><strong>Description:</strong> {{ recipe.description }}</p>
+        
+        <p><strong>Steps:</strong></p>
+        <pre>{{ recipe.recipeSteps }}</pre>
+
+        {% if recipe.image_name %}
+        <p><strong>Image:</strong></p>
+        <img src="{{ url_for('static', filename='images/' + recipe.image_name) }}" alt="{{ recipe.name }}" class="client-recipes-image">
+        {% endif %}
+
+        <p><strong>Ingredients:</strong></p>
+        {% if recipe_ingredients %}
+        <ul class="client-recipes-ingredients">
+            {% for ingredient in recipe_ingredients %}
+            <li>{{ ingredient.quantity }} x {{ ingredient.name }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No ingredients found for this recipe.</p>
+        {% endif %}
+    </div>
+
+    <a href="{{ url_for('client.manage_recipes') }}">
+        <button class="panel-button">Back to Panel</button>
+    </a>
+{% endblock %}

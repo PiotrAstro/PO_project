@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2 class="panel-title">Add Ingredient</h2>
+    <form class="client-recipes-form" method="POST" action="{{ url_for('client.add_ingredient') }}">
+        <label for="ingredient_name">Ingredient Name:</label>
+        <input type="text" id="ingredient_name" name="ingredient_name" required>
+        <button class="panel-button" type="submit">Add</button>
+    </form>
+    <a href="{{ url_for('client.add_recipe') }}">
+        <button class="panel-button">Back to Add Recipe</button>
+    </a>
+{% endblock %}

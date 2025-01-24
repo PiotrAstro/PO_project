@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/restaurant.css') }}">
+{% endblock %}
+
+{% block content %}
+    <h2>Make an Offer for Request {{ request_id }}</h2>
+    <form method="POST" action="{{ url_for('restaurant.make_offer', request_id=request_id) }}">
+        <label for="price">Price:</label>
+        <input type="number" step="0.01" name="price" id="price" required>
+        
+        <label for="notes">Notes:</label>
+        <textarea name="notes" id="notes"></textarea>
+        
+        <label for="waitingTime">Estimated Delivery Time (HH:MM:SS):</label>
+        <input type="time" name="waitingTime" id="waitingTime" required>
+        
+        <button type="submit" class="panel-button">Submit Offer</button>
+    </form>
+    <a href="{{ url_for('restaurant.browse_requests') }}">
+        <button class="panel-button">Back to Requests</button>
+    </a>
+{% endblock %}

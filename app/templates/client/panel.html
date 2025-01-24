@@ -8,7 +8,7 @@
     <h2 class="panel-title">Client Panel</h2>
     <div class="button-container">
         <button class="panel-button">Manage Reviews</button>
-        <button class="panel-button">Manage Recipes</button>
+        <button class="panel-button" onclick="window.location.href='{{ url_for('client.manage_recipes') }}'">Manage Recipes</button>
         <button class="panel-button">Order</button>
     </div>
 {% endblock %}

@@ -27,3 +27,57 @@
 .panel-button:hover {
     background-color: #333;
 }
+
+.client-recipes-table {
+    border-collapse: separate;
+    border-spacing: 10px;
+    width: 110%;
+}
+
+.client-recipes-table th, .client-recipes-table td {
+    padding: 15px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.client-recipes-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+}
+
+.client-recipes-form label {
+    font-weight: bold;
+}
+
+.client-recipes-form textarea, 
+.client-recipes-form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.client-recipes-form button {
+    margin-top: 15px;
+}
+
+.client-recipes-details {
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+.client-recipes-ingredients {
+    list-style-type: square;
+    margin: 10px 0 20px 20px;
+    padding: 0;
+}
+
+.client-recipes-image {
+    max-width: 100%;
+    height: auto;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px;
+}

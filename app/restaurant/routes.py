@@ -3,7 +3,8 @@ from flask_login import login_required, current_user, login_user
 from functools import wraps
 import app.login_forms as login_forms
 import app.restaurant.restaurant as restaurant
-from app.models import Restaurant
+from app.models import Restaurant, db
+from sqlalchemy import text
 
 restaurant_bp = Blueprint('restaurant', __name__, url_prefix='/restaurant')
 
@@ -46,3 +47,48 @@ def login_post():
             login_user(user)
             return redirect(url_for('restaurant.panel'))
     return redirect(url_for('restaurant.login'))
+
+
+@restaurant_bp.route('/browse_requests')
+@restaurant_required
+def browse_requests():
+    requests = db.session.execute(
+        text('''
+            SELECT * 
+            FROM "Request" 
+            WHERE id NOT IN (
+                SELECT request_id FROM "Offer"
+            )
+            ''')
+        ).fetchall()
+
+    return render_template('restaurant/browse_requests.html', requests=requests), 200
+
+
+@restaurant_bp.route('/make_offer/<int:request_id>', methods=['GET', 'POST'])
+@restaurant_required
+def make_offer(request_id):
+    if request.method == 'POST':
+        price = request.form['price']
+        notes = request.form['notes']
+        waiting_time = request.form['waitingTime']
+        restaurant_id = current_user.id
+
+        db.session.execute(
+            text('''
+                INSERT INTO "Offer" (request_id, restaurant_id, price, notes, "waitingTime")
+                VALUES (:request_id, :restaurant_id, :price, :notes, :waiting_time)
+            '''),
+            {
+                'request_id': request_id,
+                'restaurant_id': restaurant_id,
+                'price': price,
+                'notes': notes,
+                'waiting_time': waiting_time
+            }
+        )
+        db.session.commit()
+
+        return redirect(url_for('restaurant.browse_requests'))
+
+    return render_template('restaurant/make_offer.html', request_id=request_id)
