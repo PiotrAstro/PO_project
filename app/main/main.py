@@ -24,11 +24,19 @@ def construct_browsing_recepies_get_query(recepie_name: str, recepie_include: li
 
 def browse_recepies(recepie_name: str, recepie_include: list[int], recepie_exclude: list[int], recepie_categories: list[int]) -> list[Recipe]:
     # create this query
-    recepies = Recipe.query.filter(Recipe.name.ilike(f'%{recepie_name}%')).all()
+    if not recepie_name:
+        recepies = Recipe.query.all()
+    else:
+        recepies = Recipe.query.filter(Recipe.name.ilike(f'%{recepie_name}%')).all()
+
+
+
     if recepie_include:
-        recepies = [recepie for recepie in recepies if all(include_id in recepie.ingredients for include_id in recepie_include)]
+        for recepie in recepies:
+            print(recepie.ingredients.all())
+        recepies = [recepie for recepie in recepies if all([include_id in [id_i.id for id_i in recepie.ingredients.all()] for include_id in recepie_include])]
     if recepie_exclude:
-        recepies = [recepie for recepie in recepies if not any(exclude_id in recepie.ingredients for exclude_id in recepie_exclude)]
+        recepies = [recepie for recepie in recepies if not any([exclude_id in [id_i.id for id_i in recepie.ingredients.all()] for exclude_id in recepie_exclude])]
     if recepie_categories:
         recepies = [recepie for recepie in recepies if recepie.recipe_type_id in recepie_categories]
     return recepies

@@ -55,21 +55,22 @@ def search_recepies():
     if not recepie_name_original:
         recepie_name_original = ""
     
-    recepie_include = request.args.get('include')
+
+    recepie_include = request.args.getlist('include')
     if recepie_include:
-        recepie_include = [int(idx) for idx in recepie_include.split(',')]
+        recepie_include = [int(idx) for idx in recepie_include]
     else:
         recepie_include = []
 
-    recepie_exclude = request.args.get('exclude')
+    recepie_exclude = request.args.getlist('exclude')
     if recepie_exclude:
-        recepie_exclude = [int(idx) for idx in recepie_exclude.split(',')]
+        recepie_exclude = [int(idx) for idx in recepie_exclude]
     else:
         recepie_exclude = []
 
-    recepie_categories = request.args.get('categories')
+    recepie_categories = request.args.getlist('categories')
     if recepie_categories:
-        recepie_categories = [int(idx) for idx in recepie_categories.split(',')]
+        recepie_categories = [int(idx) for idx in recepie_categories]
     else:
         recepie_categories = []
 

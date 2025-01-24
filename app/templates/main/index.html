@@ -14,5 +14,11 @@
                 <button type="button" class="btn" onclick="window.location.href='{{ url_for('deliverer.login') }}'">Deliverer</button>
             </div>
         </div>
+        <h2>Guest Actions</h2>
+        <div class="login-options">
+            <div class="login-option">
+                <button type="button" class="btn" onclick="window.location.href='{{ url_for('main.browsing_recepies') }}'">Browse Recepies</button>
+            </div>
+        </div>
     </div>
 {% endblock %}

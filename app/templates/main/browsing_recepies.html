@@ -29,6 +29,7 @@
     }
 </style>
 
+<a href="/">Back</a>
 <form method="GET" action="{{ goto }}">
     <div class="grid-container">
         <!-- Column 1: Recipe Name -->
@@ -85,7 +86,7 @@
                            name="categories" 
                            value="{{ category.id }}"
                            {% if category.id in recepie_categories %}checked{% endif %}>
-                    <label for="category_{{ category.id }}">{{ category.name }}</label>
+                    <label for="category_{{ category.id }}">{{ category.type }}</label>
                 </div>
                 {% endfor %}
             </div>
