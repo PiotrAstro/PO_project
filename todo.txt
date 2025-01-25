@@ -1,6 +1,6 @@
 Mati -dla każdego usera panel z funkcjonanosciami (same Przyciski) (done)
 -browsing recipies dla panelu klienta i goscia (wyszukiwanie LIKE, konwersja do lowercase?), wyswietlenie przepisow
--w panelu klienta opcja manage your reviews
+-w panelu klienta opcja manage your reviews (done)
 Konrad -w panelu klienta opcja recipe management z opcjami edycji, usunięcia i dodania nowego przepisu (done)
 -w panelu klienta opcja order: wybranie przepisu/przepisów, uzupełnienie danych, stworzenie requestu, przeglądanie ofert (możliwosc akceptacji)
 Konrad -w panelu restauracji przeglądanie requestów, mozliwosc wystawienia oferty w odpowiedzi na request (done) 
