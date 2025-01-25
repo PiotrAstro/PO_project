@@ -1,7 +1,7 @@
 # app/client/client.py
 
 from typing import List, Optional
-from app.models import RecipeReview, Recipe, Client
+from app.models import RecipeReview, Recipe, Client, Request
 from app import db
 from sqlalchemy import text
 
@@ -82,3 +82,36 @@ def get_all_recipes():
         ''')
     ).fetchall()
     return recipes
+
+
+
+def create_request(client_id: int, withDelivery: bool, address: str, electronic_payment: bool) -> int:
+    try:
+        new_request = Request(
+            client_id=client_id,
+            withDelivery=withDelivery,
+            address=address,
+            electronicPayment=electronic_payment
+        )
+        db.session.add(new_request)
+        db.session.commit()
+        return new_request.id
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error creating order: {e}")
+        raise e
+
+
+def associate_recipes_to_request(request_id: int, recipe_ids: List[int]) -> None:
+    for recipe_id in recipe_ids:
+        db.session.execute(
+            text('''
+                INSERT INTO "RecipeRequest" (recipe_id, request_id)
+                VALUES (:recipe_id, :request_id)
+            '''),
+            {
+                'recipe_id': recipe_id,
+                'request_id': request_id
+            }
+        )
+    db.session.commit()
