@@ -13,6 +13,7 @@ class DeliveryStatus(enum.Enum):
 
 
 class OrderStatus(enum.Enum):
+    Canceled = "Canceled"
     InPreparation = "InPreparation"
     WaitingForDelivery = "WaitingForDelivery"
     Registered = "Registered"
@@ -184,6 +185,7 @@ class Orders(db.Model):
 
     # Relationships
     delivery = db.relationship('Delivery', backref='order', uselist=False, lazy='select')
+    offer = db.relationship('Offer', backref='order', uselist=False, lazy='select')
     payment = db.relationship('Payment', backref='order', uselist=False, lazy='select')
 
 

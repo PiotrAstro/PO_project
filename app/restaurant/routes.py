@@ -1,9 +1,14 @@
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required, current_user, login_user
 from functools import wraps
+from wtforms.validators import DataRequired
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
 import app.login_forms as login_forms
+from app.restaurant.form import EditOrderForm
 import app.restaurant.restaurant as restaurant
-from app.models import Restaurant, db
+from app.models import OrderStatus, Restaurant, db
 from sqlalchemy import text
 
 restaurant_bp = Blueprint('restaurant', __name__, url_prefix='/restaurant')
@@ -47,6 +52,85 @@ def login_post():
             login_user(user)
             return redirect(url_for('restaurant.panel'))
     return redirect(url_for('restaurant.login'))
+
+@restaurant_bp.route('/browse-orders')
+@restaurant_required
+def browse_orders():
+    not_finished_orders = restaurant.get_not_finished_orders(current_user.id)
+    return render_template(
+        'restaurant/browse_orders.html', 
+        orders_by_status=not_finished_orders,
+        OrderStatus=OrderStatus  # Pass the enum to the template
+    ), 200
+
+@restaurant_bp.route('/edit-order', methods=['POST'])
+@restaurant_required
+def edit_order_post():
+    form = EditOrderForm()
+    
+    if form.validate_on_submit():
+        order_id = int(form.id.data)
+        order = restaurant.get_order(order_id, current_user.id)
+        
+        if not order:
+            return redirect(url_for('restaurant.browse_orders'))
+        
+        new_status = form.status.data
+        
+        # If status is changed to ready and delivery is required
+        if new_status == OrderStatus.WaitingForDelivery.value and order.offer.request.withDelivery:
+            # Store the notes in session for after deliverer selection
+            session['pending_notes'] = form.notes.data
+            return redirect(url_for('restaurant.select_deliverer', order_id=order_id))
+        
+        # If no delivery required or different status
+        restaurant.update_order(order_id, new_status, form.notes.data)
+        return redirect(url_for('restaurant.browse_orders'))
+    
+    return redirect(url_for('restaurant.browse_orders'))
+
+@restaurant_bp.route('/select-deliverer')
+@restaurant_required
+def select_deliverer():
+    order_id = request.args.get('order_id')
+    if not order_id:
+        return redirect(url_for('restaurant.browse_orders'))
+    
+    order = restaurant.get_order(int(order_id), current_user.id)
+    if not order:
+        return redirect(url_for('restaurant.browse_orders'))
+    
+    deliverers = restaurant.get_available_deliverers(current_user.id)
+    
+    return render_template(
+        'restaurant/select_deliverer.html',
+        order=order,
+        deliverers=deliverers
+    )
+
+@restaurant_bp.route('/select-deliverer', methods=['POST'])
+@restaurant_required
+def select_deliverer_post():
+    order_id = request.args.get('order_id')
+    deliverer_id = request.form.get('deliverer_id')
+    notes = session.pop('pending_notes', None)  # Get and remove notes from session
+    
+    if not order_id or not deliverer_id:
+        return redirect(url_for('restaurant.browse_orders'))
+    
+    order = restaurant.get_order(int(order_id), current_user.id)
+    if not order:
+        return redirect(url_for('restaurant.browse_orders'))
+    
+    # Update order and create delivery
+    restaurant.update_order_with_delivery(
+        order_id=int(order_id),
+        deliverer_id=int(deliverer_id),
+        notes=notes
+    )
+    
+    return redirect(url_for('restaurant.browse_orders'))
+
 
 
 @restaurant_bp.route('/browse_requests')
