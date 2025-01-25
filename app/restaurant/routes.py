@@ -151,20 +151,44 @@ def select_deliverer():
 
 
 
+# @restaurant_bp.route('/browse_requests')
+# @restaurant_required
+# def browse_requests():
+#     requests = db.session.execute(
+#         text('''
+#             SELECT * 
+#             FROM "Request" 
+#             WHERE id NOT IN (
+#                 SELECT request_id FROM "Offer"
+#             )
+#             ''')
+#         ).fetchall()
+
+#     return render_template('restaurant/browse_requests.html', requests=requests), 200
 @restaurant_bp.route('/browse_requests')
 @restaurant_required
 def browse_requests():
     requests = db.session.execute(
         text('''
-            SELECT * 
-            FROM "Request" 
-            WHERE id NOT IN (
+            SELECT r.id AS request_id,
+                   c.name || ' ' || c.surname AS client_name,
+                   string_agg(ri.name, ', ') AS ordered_items,
+                   r."withDelivery",
+                   r.address,
+                   r."electronicPayment"
+            FROM "Request" r
+            JOIN "Client" c ON r.client_id = c.id
+            JOIN "RecipeRequest" rr ON r.id = rr.request_id
+            JOIN "Recipe" ri ON rr.recipe_id = ri.id
+            WHERE r.id NOT IN (
                 SELECT request_id FROM "Offer"
             )
-            ''')
-        ).fetchall()
+            GROUP BY r.id, c.name, c.surname, r."withDelivery", r.address, r."electronicPayment"
+        ''')
+    ).fetchall()
 
-    return render_template('restaurant/browse_requests.html', requests=requests), 200
+    return render_template('restaurant/browse_requests.html', requests=requests)
+
 
 
 @restaurant_bp.route('/make_offer/<int:request_id>', methods=['GET', 'POST'])
@@ -175,6 +199,9 @@ def make_offer(request_id):
         notes = request.form['notes']
         waiting_time = request.form['waitingTime']
         restaurant_id = current_user.id
+
+        if float(price) <= 0:
+            return "Price must be positive", 400
 
         db.session.execute(
             text('''

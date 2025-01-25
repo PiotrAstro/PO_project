@@ -1,0 +1,57 @@
+<!-- app/templates/client/browse_offers.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Browse Offers</title>
+</head>
+<body>
+    <h1>Browse Offers</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    {% if offers %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Dish Names</th>
+                    <th>Restaurant</th>
+                    <th>Price</th>
+                    <th>Waiting Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for offer in offers %}
+                <tr>
+                    <td>{{ offer.dish_names }}</td>
+                    <td>{{ offer.restaurant_name }}</td>
+                    <td>{{ offer.price }}</td>
+                    <td>{{ offer.waitingTime }}</td>
+                    <td>
+                        <form action="{{ url_for('client.accept_offer_route', offer_id=offer.id) }}" method="POST" style="display:inline;">
+                            <button type="submit">Accept</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No offers available.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('client.panel') }}"><button>Back to Panel</button></a>
+    <a href="{{ url_for('client.browse_orders') }}"><button>Browse Orders</button></a>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!-- app/templates/client/add_review.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Review</title>
+</head>
+<body>
+    <h1>Add a New Review</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('client.add_review') }}" method="POST">
+        <label for="recipe_id">Recipe:</label>
+        <select name="recipe_id" id="recipe_id" required>
+            <option value="">--Select Recipe--</option>
+            {% for recipe in recipes %}
+                <option value="{{ recipe.id }}">{{ recipe.name }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label for="rating">Rating (1-5):</label>
+        <input type="number" id="rating" name="rating" min="1" max="5" required>
+        <br><br>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" rows="4" cols="50" required></textarea>
+        <br><br>
+
+        <button type="submit">Add Review</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('client.manage_reviews') }}"><button>Back to Manage Reviews</button></a>
+</body>
+</html>
