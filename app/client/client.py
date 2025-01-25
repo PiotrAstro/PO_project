@@ -85,7 +85,7 @@ def get_all_recipes():
 
 
 
-def create_request(client_id: int, withDelivery: bool, address: str, electronic_payment: bool) -> int:
+def create_request(client_id, withDelivery, address, electronic_payment) :
     try:
         new_request = Request(
             client_id=client_id,
@@ -98,11 +98,11 @@ def create_request(client_id: int, withDelivery: bool, address: str, electronic_
         return new_request.id
     except Exception as e:
         db.session.rollback()
-        print(f"Error creating order: {e}")
+        print(f"Error creating request: {e}")
         raise e
 
 
-def associate_recipes_to_request(request_id: int, recipe_ids: List[int]) -> None:
+def associate_recipes_to_request(request_id, recipe_ids):
     for recipe_id in recipe_ids:
         db.session.execute(
             text('''
