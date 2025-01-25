@@ -1,0 +1,87 @@
+<!-- app/templates/client/browse_orders.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Browse Orders</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+            color: green;
+        }
+
+        .flashes li {
+            margin-bottom: 5px;
+        }
+
+        button {
+            padding: 6px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Browse Orders</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    {% if orders %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Dish Names</th>
+                    <th>Restaurant</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.dish_names }}</td>
+                    <td>{{ order.restaurant_name }}</td>
+                    <td>{{ order.price }}</td>
+                    <td>{{ order.orderStatus }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No orders available.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('client.panel') }}"><button>Back to Panel</button></a>
+</body>
+</html>
