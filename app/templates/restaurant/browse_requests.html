@@ -5,14 +5,14 @@
 {% endblock %}
 
 {% block content %}
-    <h2>Browse Requests</h2>
+    <h2 class="panel-title">Browse Requests</h2>
 
     {% if requests %}
         <table class="styled-table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Client ID</th>
+                    <th>Client Name</th>
+                    <th>Ordered Items</th>
                     <th>With Delivery</th>
                     <th>Address</th>
                     <th>Electronic Payment</th>
@@ -22,13 +22,13 @@
             <tbody>
                 {% for request in requests %}
                 <tr>
-                    <td>{{ request.id }}</td>
-                    <td>{{ request.client_id }}</td>
+                    <td>{{ request.client_name }}</td>
+                    <td>{{ request.ordered_items }}</td>
                     <td>{{ 'Yes' if request.withDelivery else 'No' }}</td>
                     <td>{{ request.address }}</td>
                     <td>{{ 'Yes' if request.electronicPayment else 'No' }}</td>
                     <td>
-                        <a href="{{ url_for('restaurant.make_offer', request_id=request.id) }}">
+                        <a href="{{ url_for('restaurant.make_offer', request_id=request.request_id) }}">
                             <button class="panel-button">Make Offer</button>
                         </a>
                     </td>

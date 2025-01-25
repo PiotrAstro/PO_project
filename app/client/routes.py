@@ -20,6 +20,8 @@ def client_required(f):
     return decorated_function
 
 
+
+
 @client_bp.route('/')
 @client_required
 def index():
@@ -165,6 +167,10 @@ def add_recipe():
             ingredient_ids = request.form.getlist('ingredient_ids[]')
             quantities = request.form.getlist('quantities[]')
 
+            # print(f"Form data: {request.form}")
+            # print(f"Ingredient IDs: {ingredient_ids}")
+            # print(f"Quantities: {quantities}")
+
             if not ingredient_ids or not quantities or len(ingredient_ids) != len(quantities):
                 raise ValueError("Ingredients and quantities cannot be empty or mismatched.")
 
@@ -185,6 +191,7 @@ def add_recipe():
                 }
             )
             recipe_id = result.fetchone()[0]
+            #print(f"Recipe ID: {recipe_id}")
 
             # Insert ingredients
             for ingredient_id, quantity in zip(ingredient_ids, quantities):
@@ -197,12 +204,10 @@ def add_recipe():
                 )
 
             db.session.commit()
-            flash('Recipe added successfully.')
             return redirect(url_for('client.manage_recipes'))
         except Exception as e:
-            print(f"Error adding recipe: {e}")
-            flash('An error occurred while adding the recipe. Please try again.')
-            return redirect(url_for('client.add_recipe'))
+            print(f"Error: {e}")
+            return "An error occurred while adding the recipe. Please try again.", 400
 
     recipe_types = db.session.execute(text('SELECT * FROM "RecipeType"')).fetchall()
     ingredients = db.session.execute(text('SELECT * FROM "Ingredient"')).fetchall()
@@ -214,17 +219,19 @@ def add_recipe():
 @client_required
 def edit_recipe(recipe_id):
     if request.method == 'POST':
+        # Zaktualizuj dane przepisu
         name = request.form['name']
         description = request.form['description']
         recipe_steps = request.form['recipeSteps']
-        recipe_type_id = int(request.form['recipe_type_id'])
+        recipe_type_id = request.form['recipe_type_id']
         ingredient_ids = request.form.getlist('ingredient_ids[]')
         quantities = request.form.getlist('quantities[]')
 
+        # Walidacja
         if not ingredient_ids or not quantities or len(ingredient_ids) != len(quantities):
-            flash("Ingredients and quantities cannot be empty or mismatched.")
-            return redirect(url_for('client.edit_recipe', recipe_id=recipe_id))
+            raise ValueError("Ingredients and quantities cannot be empty or mismatched.")
 
+        # Aktualizacja przepisu w bazie danych
         db.session.execute(
             text('''
                 UPDATE "Recipe"
@@ -262,7 +269,6 @@ def edit_recipe(recipe_id):
             )
 
         db.session.commit()
-        flash('Recipe updated successfully.')
         return redirect(url_for('client.manage_recipes'))
 
     # Pobierz dane przepisu
@@ -275,8 +281,7 @@ def edit_recipe(recipe_id):
     ).fetchone()
 
     if not recipe:
-        flash("Recipe not found or unauthorized access.")
-        return redirect(url_for('client.manage_recipes'))
+        return "Recipe not found or unauthorized access.", 404
 
     # Pobierz składniki przypisane do przepisu
     recipe_ingredients = db.session.execute(
@@ -293,6 +298,10 @@ def edit_recipe(recipe_id):
     recipe_types = db.session.execute(text('SELECT * FROM "RecipeType"')).fetchall()
     ingredients = db.session.execute(text('SELECT * FROM "Ingredient"')).fetchall()
 
+    # Debugowanie
+    # print(f"Recipe: {recipe}")
+    # print(f"Recipe Ingredients: {recipe_ingredients}")
+
     return render_template(
         'client/edit_recipe.html',
         recipe=recipe,
@@ -305,77 +314,70 @@ def edit_recipe(recipe_id):
 @client_bp.route('/remove_recipe/<int:recipe_id>', methods=['POST'])
 @client_required
 def remove_recipe(recipe_id):
-    try:
-        # Sprawdź, czy przepis należy do klienta
-        recipe = db.session.execute(
-            text('''
-                SELECT * FROM "Recipe"
-                WHERE id = :recipe_id AND client_id = :client_id
-            '''),
-            {
-                'recipe_id': recipe_id,
-                'client_id': current_user.id
-            }
-        ).fetchone()
+    recipe = db.session.execute(
+        text('''
+            SELECT * FROM "Recipe"
+            WHERE id = :recipe_id AND client_id = :client_id
+        '''),
+        {
+            'recipe_id': recipe_id,
+            'client_id': current_user.id
+        }
+    ).fetchone()
 
-        if not recipe:
-            flash("Recipe not found or unauthorized access.")
-            return redirect(url_for('client.manage_recipes'))
+    if not recipe:
+        return "Recipe not found or unauthorized access.", 404
 
-        # Sprawdź, czy przepis nie jest powiązany z aktywnymi zamówieniami
-        linked_orders = db.session.execute(
-            text('''
-                SELECT 1
-                FROM "Offer" o
-                JOIN "Orders" ord ON o.id = ord.offer_id
-                WHERE o.request_id IN (
-                    SELECT rr.request_id
-                    FROM "RecipeRequest" rr
-                    WHERE rr.recipe_id = :recipe_id
-                ) AND ord."orderStatus" IN ('InPreparation', 'InDelivery', 'WaitingForDelivery')
-            '''),
-            {'recipe_id': recipe_id}
-        ).fetchone()
+    # Sprawdź, czy przepis nie jest powiązany z aktywnymi zamówieniami
+    linked_orders = db.session.execute(
+        text('''
+            SELECT 1
+            FROM "Offer" o
+            JOIN "Orders" ord ON o.id = ord.offer_id
+            WHERE o.request_id IN (
+                SELECT rr.request_id
+                FROM "RecipeRequest" rr
+                WHERE rr.recipe_id = :recipe_id
+            ) AND ord."orderStatus" IN ('InPreparation', 'InDelivery', 'WaitingForDelivery')
+        '''),
+        {'recipe_id': recipe_id}
+    ).fetchone()
 
-        if linked_orders:
-            flash("Cannot delete recipe linked to active orders.")
-            return redirect(url_for('client.manage_recipes'))
 
-        # Usuń składniki przepisu
-        db.session.execute(
-            text('''
-                DELETE FROM "RecipeIngredients"
-                WHERE recipe_id = :recipe_id
-            '''),
-            {'recipe_id': recipe_id}
-        )
 
-        # Usuń przepis
-        db.session.execute(
-            text('''
-                DELETE FROM "Recipe"
-                WHERE id = :recipe_id AND client_id = :client_id
-            '''),
-            {'recipe_id': recipe_id, 'client_id': current_user.id}
-        )
+    if linked_orders:
+        return "Cannot delete recipe linked to active orders.", 400
 
-        # Usuń nieużywane składniki
-        db.session.execute(
-            text('''
-                DELETE FROM "Ingredient"
-                WHERE id NOT IN (
-                    SELECT DISTINCT ingredient_id
-                    FROM "RecipeIngredients"
-                )
-            ''')
-        )
+    # Usuń składniki przepisu
+    db.session.execute(
+        text('''
+            DELETE FROM "RecipeIngredients"
+            WHERE recipe_id = :recipe_id
+        '''),
+        {'recipe_id': recipe_id}
+    )
 
-        db.session.commit()
-        flash("Recipe deleted successfully.")
-    except Exception as e:
-        print(f"Error deleting recipe: {e}")
-        flash("An error occurred while deleting the recipe.")
+    # Usuń przepis
+    db.session.execute(
+        text('''
+            DELETE FROM "Recipe"
+            WHERE id = :recipe_id AND client_id = :client_id
+        '''),
+        {'recipe_id': recipe_id, 'client_id': current_user.id}
+    )
 
+    # Usuń nieużywane składniki
+    db.session.execute(
+        text('''
+            DELETE FROM "Ingredient"
+            WHERE id NOT IN (
+                SELECT DISTINCT ingredient_id
+                FROM "RecipeIngredients"
+            )
+        ''')
+    )
+
+    db.session.commit()
     return redirect(url_for('client.manage_recipes'))
 
 
@@ -392,7 +394,6 @@ def add_recipe_type():
             {'type': recipe_type}
         )
         db.session.commit()
-        flash("Recipe type added successfully.")
         return redirect(url_for('client.add_recipe'))
 
     return render_template('client/add_recipe_type.html')
@@ -411,7 +412,6 @@ def add_ingredient():
             {'name': ingredient_name}
         )
         db.session.commit()
-        flash("Ingredient added successfully.")
         return redirect(url_for('client.add_recipe'))
 
     return render_template('client/add_ingredient.html')
@@ -430,8 +430,7 @@ def view_recipe(recipe_id):
     ).mappings().fetchone()
 
     if not recipe:
-        flash("Recipe not found or unauthorized access.")
-        return redirect(url_for('client.manage_recipes'))
+        return "Recipe not found or unauthorized access.", 404
 
     # Pobierz składniki przepisu
     recipe_ingredients = db.session.execute(
@@ -443,6 +442,11 @@ def view_recipe(recipe_id):
         '''),
         {'recipe_id': recipe_id}
     ).fetchall()
+
+    # Debugging
+    print("Recipe:", recipe)
+    print("Steps:", recipe["recipeSteps"])  # Dodaj print, aby upewnić się, że dane są pobierane
+
 
     return render_template(
         'client/view_recipe.html',
