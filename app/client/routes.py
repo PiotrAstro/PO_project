@@ -140,6 +140,53 @@ def delete_review(review_id):
     return redirect(url_for('client.manage_reviews'))
 
 
+@client_bp.route('/request', methods=['GET', 'POST'])
+@client_required
+def create_request():
+    if request.method == 'POST':
+        try:
+            recipe_ids = request.form.getlist('recipe_ids')
+            with_delivery = request.form.get('with_delivery') == 'true'
+            electronic_payment = request.form.get('electronic_payment') == 'true'
+            address = request.form.get('address')
+
+            print(f"Selected recipes: {recipe_ids}")
+            print(f"With Delivery: {with_delivery}")
+            print(f"Electronic Payment: {electronic_payment}")
+            print(f"Address: {address}")
+
+            if not recipe_ids:
+                flash('You must select at least one recipe.')
+                return redirect(url_for('client.create_request'))
+
+            if with_delivery and not address:
+                flash('Address is required for delivery.')
+                return redirect(url_for('client.create_request'))
+
+            request_id = client_module.create_request(
+                client_id=current_user.id,
+                withDelivery=with_delivery,
+                address=address,
+                electronic_payment=electronic_payment
+            )
+
+            client_module.associate_recipes_to_request(
+                request_id=request_id,
+                recipe_ids=recipe_ids
+            )
+
+            flash('Request created successfully.')
+            return redirect(url_for('client.panel'))
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating request: {e}")
+            flash('An error occurred while creating the request.')
+            return redirect(url_for('client.create_request'))
+
+    recipes = client_module.get_all_recipes()
+    return render_template('client/create_request.html', recipes=recipes), 200
+
+
 @client_bp.route('/manage_recipes')
 @client_required
 def manage_recipes():
