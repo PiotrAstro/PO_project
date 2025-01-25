@@ -1,3 +1,4 @@
+import datetime
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required, current_user, login_user
 from functools import wraps
@@ -6,7 +7,7 @@ from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 import app.login_forms as login_forms
-from app.restaurant.form import EditOrderForm
+from app.restaurant.form import CreateDeliveryForm, EditOrderForm
 import app.restaurant.restaurant as restaurant
 from app.models import OrderStatus, Restaurant, db
 from sqlalchemy import text
@@ -56,12 +57,35 @@ def login_post():
 @restaurant_bp.route('/browse-orders')
 @restaurant_required
 def browse_orders():
-    not_finished_orders = restaurant.get_not_finished_orders(current_user.id)
+    not_finished_orders = restaurant.get_orders(current_user.id)
     return render_template(
         'restaurant/browse_orders.html', 
         orders_by_status=not_finished_orders,
         OrderStatus=OrderStatus  # Pass the enum to the template
     ), 200
+
+@restaurant_bp.route('/edit-order', methods=['GET'])
+@restaurant_required
+def edit_order():
+    form = EditOrderForm()
+    order_id = request.args.get('order_id')
+    if not order_id:
+        return redirect(url_for('restaurant.browse_orders'))
+    order = restaurant.get_order(int(order_id), current_user.id)
+    if not order:
+        return redirect(url_for('restaurant.browse_orders'))
+    form.order_id.data = order.id
+    form.status.data = order.orderStatus.value
+    form.notes.data = order.notes
+
+    status_get = request.args.get('status')
+    if status_get:
+        form.status.data = status_get
+    
+    notes_get = request.args.get('notes')
+    if notes_get:
+        form.notes.data = notes_get
+    return render_template('restaurant/edit_order.html', form=form, order=order), 200
 
 @restaurant_bp.route('/edit-order', methods=['POST'])
 @restaurant_required
@@ -69,65 +93,59 @@ def edit_order_post():
     form = EditOrderForm()
     
     if form.validate_on_submit():
-        order_id = int(form.id.data)
+        assert form.order_id.data is not None
+        order_id = int(form.order_id.data)
         order = restaurant.get_order(order_id, current_user.id)
-        
         if not order:
             return redirect(url_for('restaurant.browse_orders'))
-        
         new_status = form.status.data
         
         # If status is changed to ready and delivery is required
-        if new_status == OrderStatus.WaitingForDelivery.value and order.offer.request.withDelivery:
-            # Store the notes in session for after deliverer selection
-            session['pending_notes'] = form.notes.data
-            return redirect(url_for('restaurant.select_deliverer', order_id=order_id))
+        if new_status == "Ready":
+            if order.offer.request.withDelivery:
+                # Store the notes in session for after deliverer selection
+                form_select_deliverer = CreateDeliveryForm()
+                form_select_deliverer.order_id.data = str(order_id)
+                form_select_deliverer.status.data = new_status
+                form_select_deliverer.notes.data = form.notes.data
+                form_select_deliverer.date.data = datetime.date.today()
+                form_select_deliverer.time.data = datetime.datetime.now()
+                form_select_deliverer.deliverer_id.choices = [(d.id, f"{d.name} {d.surname}") for d in restaurant.get_available_deliverers(current_user.id)]
+
+                back_url = url_for('restaurant.edit_order', order_id=order_id, status=new_status, notes=form.notes.data)
+                return render_template('restaurant/select_deliverer.html', form=form_select_deliverer, order=order, goback=back_url)
+            else:
+                new_status = "Delivered"
         
         # If no delivery required or different status
-        restaurant.update_order(order_id, new_status, form.notes.data)
-        return redirect(url_for('restaurant.browse_orders'))
-    
+        restaurant.update_order(order_id, current_user.id, new_status, form.notes.data)
     return redirect(url_for('restaurant.browse_orders'))
 
-@restaurant_bp.route('/select-deliverer')
+@restaurant_bp.route('/cancel-order', methods=['POST'])
 @restaurant_required
-def select_deliverer():
-    order_id = request.args.get('order_id')
+def cancel_order():
+    order_id = request.form.get('order_id')
     if not order_id:
         return redirect(url_for('restaurant.browse_orders'))
     
-    order = restaurant.get_order(int(order_id), current_user.id)
-    if not order:
-        return redirect(url_for('restaurant.browse_orders'))
-    
-    deliverers = restaurant.get_available_deliverers(current_user.id)
-    
-    return render_template(
-        'restaurant/select_deliverer.html',
-        order=order,
-        deliverers=deliverers
-    )
+    restaurant.cancel_order(int(order_id), current_user.id)
+    return redirect(url_for('restaurant.browse_orders'))
 
 @restaurant_bp.route('/select-deliverer', methods=['POST'])
 @restaurant_required
-def select_deliverer_post():
-    order_id = request.args.get('order_id')
-    deliverer_id = request.form.get('deliverer_id')
-    notes = session.pop('pending_notes', None)  # Get and remove notes from session
-    
-    if not order_id or not deliverer_id:
-        return redirect(url_for('restaurant.browse_orders'))
-    
-    order = restaurant.get_order(int(order_id), current_user.id)
-    if not order:
-        return redirect(url_for('restaurant.browse_orders'))
-    
-    # Update order and create delivery
-    restaurant.update_order_with_delivery(
-        order_id=int(order_id),
-        deliverer_id=int(deliverer_id),
-        notes=notes
-    )
+def select_deliverer():
+    print("Hi")
+    form = CreateDeliveryForm()
+    form.deliverer_id.choices = [(d.id, f"{d.name} {d.surname}") for d in restaurant.get_available_deliverers(current_user.id)]
+    if form.validate_on_submit():
+        assert form.order_id.data is not None
+        order_id = int(form.order_id.data)
+        deliverer_id = int(form.deliverer_id.data)
+        assert form.date.data is not None
+        assert form.time.data is not None
+        delivery_due = datetime.datetime.combine(form.date.data, form.time.data.time())
+        notes = form.notes.data
+        restaurant.update_order_with_delivery(order_id, deliverer_id, delivery_due, notes)
     
     return redirect(url_for('restaurant.browse_orders'))
 

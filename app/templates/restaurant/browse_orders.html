@@ -149,6 +149,21 @@
         {% endfor %}
     </div>
 
+    <!-- InDelivery -->
+    <div class="status-section">
+        <div class="status-title">In Delivery</div>
+        {% for order in orders_by_status[OrderStatus.InDelivery] %}
+        <div class="order-card">
+            <div class="order-detail"><strong>Order #{{ order.id }}</strong></div>
+            <div class="order-detail">Client: {{ order.offer.request.client.name }}</div>
+            <div class="order-detail">Price: ${{ order.offer.price }}</div>
+            <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
+        </div>
+        {% else %}
+        <p>No orders delivered.</p>
+        {% endfor %}
+    </div>
+
     <!-- Delivered -->
     <div class="status-section">
         <div class="status-title">Delivered</div>

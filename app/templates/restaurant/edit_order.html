@@ -1,59 +1,189 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="mx-auto max-w-7xl px-4 py-6">
-    <h1 class="text-2xl font-bold mb-6">Modify Order</h1>
+<style>
+    .container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
     
-    <div class="bg-gray-100 p-4 rounded-lg mb-6">
-        <h3 class="text-lg font-semibold mb-4">Order Details</h3>
-        <div class="space-y-4">
-            <div>
-                <h4 class="text-sm font-medium text-gray-700">Client:</h4>
-                <p class="ml-4 text-gray-900">{{ order.offer.request.client.name }} {{ order.offer.request.client.surname }}</p>
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #333;
+    }
+
+    .back-link:hover {
+        background-color: #e0e0e0;
+    }
+    
+    .page-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+    
+    .details-section {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 20px;
+    }
+    
+    .section-title {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #ddd;
+        color: #333;
+    }
+    
+    .detail-group {
+        margin-bottom: 15px;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .detail-value {
+        margin-left: 15px;
+        color: #333;
+    }
+    
+    .recipe-list {
+        list-style: none;
+        padding-left: 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: 5px;
+    }
+    
+    .form-textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: 5px;
+        min-height: 100px;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .update-button {
+        padding: 8px 16px;
+        background-color: #4CAF50;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        cursor: pointer;
+    }
+    
+    .update-button:hover {
+        background-color: #45a049;
+    }
+    
+    .cancel-button {
+        padding: 8px 16px;
+        background-color: #f44336;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    
+    .cancel-button:hover {
+        background-color: #da190b;
+    }
+</style>
+
+<div class="container">
+    <a href="{{ url_for('restaurant.browse_orders') }}" class="back-link">Back</a>
+    <h1 class="page-title">Modify Order</h1>
+    
+    <div class="content-grid">
+        <div class="details-section">
+            <h3 class="section-title">Order Details</h3>
+            
+            <div class="detail-group">
+                <div class="detail-label">Client:</div>
+                <div class="detail-value">{{ order.offer.request.client.name }} {{ order.offer.request.client.surname }}</div>
             </div>
             
-            <div>
-                <h4 class="text-sm font-medium text-gray-700">Selected Recipes:</h4>
-                <ul class="ml-4 space-y-1">
+            <div class="detail-group">
+                <div class="detail-label">Selected Recipes:</div>
+                <ul class="recipe-list">
                     {% for recipe in order.offer.request.recipes %}
-                        <li class="text-gray-900">{{ recipe.name }}</li>
+                        <li class="detail-value">{{ recipe.name }}</li>
                     {% endfor %}
                 </ul>
             </div>
             
             {% if order.offer.request.withDelivery %}
-            <div>
-                <h4 class="text-sm font-medium text-gray-700">Delivery Address:</h4>
-                <p class="ml-4 text-gray-900">{{ order.offer.request.address }}</p>
+            <div class="detail-group">
+                <div class="detail-label">Delivery Address:</div>
+                <div class="detail-value">{{ order.offer.request.address }}</div>
             </div>
             {% endif %}
         </div>
-    </div>
 
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        {{ form.id }}
-        
-        <div class="space-y-6">
-            <div>
-                <h4 class="text-sm font-medium text-gray-700 mb-2">Order Status</h4>
-                <div class="ml-4">
-                    {{ form.status(class="w-full px-3 py-2 border border-gray-300 rounded-md") }}
+        <div class="details-section">
+            <h3 class="section-title">Change Options</h3>
+            
+            <form method="POST">
+                {{ form.csrf_token }}
+                {{ form.order_id }}
+                
+                <div class="form-group">
+                    <div class="detail-label">Order Status</div>
+                    {{ form.status(class="form-select") }}
                 </div>
-            </div>
 
-            <div>
-                <label class="text-sm font-medium text-gray-700">Additional Notes</label>
-                {{ form.notes(class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md") }}
-            </div>
+                <div class="form-group">
+                    <div class="detail-label">Additional Notes</div>
+                    {{ form.notes(class="form-textarea") }}
+                </div>
 
-            <div class="flex space-x-4">
-                <a href="{{ url_for('restaurant.browse_orders') }}" 
-                   class="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
-                    Back
-                </a>
-                {{ form.submit(class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700", value="Update Order") }}
-            </div>
+                <div class="button-group">
+                    {{ form.submit(class="update-button", value="Update Order") }}
+                </div>
+            </form>
+
+            <form method="POST" action="{{ url_for('restaurant.cancel_order', order_id=order.id) }}">
+                {{ form.csrf_token }}
+                {{ form.order_id }}
+                <button type="submit" class="cancel-button">Cancel Order</button>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 {% endblock %}

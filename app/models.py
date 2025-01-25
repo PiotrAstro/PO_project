@@ -197,7 +197,7 @@ class Delivery(db.Model):
     deliverer_id = db.Column(db.Integer, db.ForeignKey('Deliverer.id', ondelete='RESTRICT'))
     deliveryStatus = db.Column(db.Enum(DeliveryStatus), nullable=False)
     deliveryDue = db.Column(db.DateTime, nullable=False)
-    deliveryTime = db.Column(db.DateTime, nullable=False)
+    deliveryTime = db.Column(db.DateTime, nullable=True)
 
 
 class Offer(db.Model):
