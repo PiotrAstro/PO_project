@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Request</title>
+</head>
+<body>
+    <h1>Create a New Request</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('client.create_request') }}" method="POST">
+        <label>Select Recipes:</label>
+        {% for recipe in recipes %}
+            <div class="recipe-item">
+                <input type="checkbox" name="recipe_ids" value="{{ recipe.id }}" id="recipe_{{ recipe.id }}">
+                <label for="recipe_{{ recipe.id }}">{{ recipe.name }}</label>
+            </div>
+        {% endfor %}
+
+        <label for="with_delivery">
+            <input type="checkbox" id="with_delivery" name="with_delivery" value="true">
+            Delivery
+        </label>
+
+        <label for="electronic_payment">
+            <input type="checkbox" id="electronic_payment" name="electronic_payment" value="true">
+            Electronic Payment
+        </label>
+
+        <label for="address">Address:</label>
+        <textarea id="address" name="address" rows="3" placeholder="Enter your address here..."></textarea>
+
+        <button type="submit">Create Request</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('client.panel') }}"><button>Back to Panel</button></a>
+</body>
+</html>
