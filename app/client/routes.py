@@ -20,8 +20,6 @@ def client_required(f):
     return decorated_function
 
 
-
-
 @client_bp.route('/')
 @client_required
 def index():
@@ -185,6 +183,48 @@ def create_request():
 
     recipes = client_module.get_all_recipes()
     return render_template('client/create_request.html', recipes=recipes), 200
+
+
+@client_bp.route('/browse_offers', methods=['GET'])
+@client_required
+def browse_offers():
+    try:
+        offers = client_module.get_available_offers(current_user.id)
+        return render_template('client/browse_offers.html', offers=offers), 200
+    except Exception as e:
+        print(f"Error fetching offers: {e}")
+        flash('An error occurred while fetching offers.')
+        return redirect(url_for('client.panel'))
+
+
+
+@client_bp.route('/accept_offer/<int:offer_id>', methods=['POST'])
+@client_required
+def accept_offer_route(offer_id):
+    try:
+        success = client_module.accept_offer(offer_id, current_user.id)
+        if success:
+            flash('Offer accepted successfully.')
+        else:
+            flash('Offer not found or already accepted.')
+        return redirect(url_for('client.panel'))
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error accepting offer: {e}")
+        flash('An error occurred while accepting the offer.')
+        return redirect(url_for('client.browse_offers'))
+
+
+@client_bp.route('/browse_orders', methods=['GET'])
+@client_required
+def browse_orders():
+    try:
+        orders = client_module.get_orders(current_user.id)
+        return render_template('client/browse_orders.html', orders=orders), 200
+    except Exception as e:
+        print(f"Error fetching orders: {e}")
+        flash('An error occurred while fetching orders.')
+        return redirect(url_for('client.panel'))
 
 
 @client_bp.route('/manage_recipes')
