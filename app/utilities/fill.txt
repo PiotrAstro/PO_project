@@ -1,0 +1,811 @@
+-- 0. (Opcjonalne) Instalacja rozszerzenia pgcrypto do hashowania haseł
+-- Jeśli chcesz hashować hasła bezpośrednio w SQL, odkomentuj poniższą linię:
+-- CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- 1. Dodanie 10 Klientów
+INSERT INTO "Client" ("phoneNumber", "address", "name", "surname", "login", "password")
+VALUES
+('1111111111', '123 Main St, Warsaw', 'John', 'Doe', 'johndoe', 'johndoe'),
+('2222222222', '456 Oak Ave, Krakow', 'Jane', 'Smith', 'janesmith', 'janesmith'),
+('3333333333', '789 Pine Rd, Gdansk', 'Alice', 'Johnson', 'alicej', 'alicej'),
+('4444444444', '321 Maple St, Poznan', 'Bob', 'Brown', 'bobb', 'bobb'),
+('5555555555', '654 Elm St, Wroclaw', 'Carol', 'Davis', 'carold', 'carold'),
+('6666666666', '987 Cedar Blvd, Lodz', 'David', 'Miller', 'davidm', 'davidm'),
+('7777777777', '135 Birch Ln, Szczecin', 'Eve', 'Wilson', 'evew', 'evew'),
+('8888888888', '246 Spruce Dr, Lublin', 'Frank', 'Moore', 'frankm', 'frankm'),
+('9999999999', '357 Aspen Way, Bialystok', 'Grace', 'Taylor', 'gracet', 'gracet'),
+('1010101010', '468 Willow Ct, Katowice', 'Hank', 'Anderson', 'hanka', 'hanka');
+
+-- 2. Dodanie 10 Restauracji
+INSERT INTO "Restaurant" ("name", "address", "login", "password")
+VALUES
+('The Great Pizza', '111 Pizza St, Warsaw', 'pizzagreat', 'pizzagreat'),
+('Burger House', '222 Burger Ave, Krakow', 'burgerhouse', 'burgerhouse'),
+('Sushi World', '333 Sushi Blvd, Gdansk', 'sushiworld', 'sushiworld'),
+('Taco Town', '444 Taco Rd, Poznan', 'tacotown', 'tacotown'),
+('Pasta Palace', '555 Pasta St, Wroclaw', 'pastapalace', 'pastapalace'),
+('Curry Corner', '666 Curry Ave, Lodz', 'currycorner', 'currycorner'),
+('Salad Stop', '777 Salad Blvd, Szczecin', 'saladstop', 'saladstop'),
+('BBQ Barn', '888 BBQ Rd, Lublin', 'bbqbarn', 'bbqbarn'),
+('Noodle Nook', '999 Noodle St, Bialystok', 'noodlenook', 'noodlenook'),
+('Steak Station', '1010 Steak Ave, Katowice', 'steakstation', 'steakstation');
+
+-- 3. Dodanie 10 Dostawców (Delivererów)
+INSERT INTO "Deliverer" ("name", "surname", "login", "password")
+VALUES
+('Anna', 'Nowak', 'annad', 'annad'),
+('Brian', 'Kowalski', 'briank', 'briank'),
+('Cathy', 'Lewandowski', 'cathyl', 'cathyl'),
+('David', 'Zieliński', 'davidz', 'davidz'),
+('Ella', 'Wójcik', 'ellaw', 'ellaw'),
+('Frank', 'Kamiński', 'frankk', 'frankk'),
+('Grace', 'Sikorski', 'graces', 'graces'),
+('Henry', 'Woźniak', 'henryw', 'henryw'),
+('Ivy', 'Kaczmarek', 'ivyk', 'ivyk'),
+('Jack', 'Mazur', 'jackm', 'jackm');
+
+-- 4. Dodanie 10 Typów Przepisów (RecipeType)
+INSERT INTO "RecipeType" ("type")
+VALUES
+('Appetizer'),
+('Main Course'),
+('Dessert'),
+('Salad'),
+('Soup'),
+('Beverage'),
+('Snack'),
+('Breakfast'),
+('Lunch'),
+('Dinner');
+
+-- 5. Dodanie 28 Składników (Ingredient) - Dodane brakujące składniki
+INSERT INTO "Ingredient" ("name")
+VALUES
+('Tomato'),
+('Cheese'),
+('Basil'),
+('Garlic'),
+('Olive Oil'),
+('Chicken'),
+('Beef'),
+('Onion'),
+('Salt'),
+('Pepper'),
+('Sugar'),
+('Flour'),
+('Eggs'),
+('Milk'),
+('Butter'),
+('Lettuce'),
+('Cucumber'),
+('Carrot'),
+('Potato'),
+('Mushroom'),
+('Apple'),
+('Lemon'),
+('Bacon'),
+('Mint'),
+('Rum'),
+('Water'),
+('Lamb'),
+('Tortilla');
+
+-- 6. Dodanie 20 Przepisów (Recipe)
+INSERT INTO "Recipe" ("client_id", "recipe_type_id", "name", "description", "recipeSteps", "image_name")
+VALUES
+(
+    (SELECT id FROM "Client" WHERE login = 'johndoe'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Appetizer'),
+    'Bruschetta',
+    'Classic Italian appetizer with tomatoes and basil.',
+    '1. Toast the bread.
+2. Top with chopped tomatoes, basil, and olive oil.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'janesmith'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Main Course'),
+    'Grilled Chicken',
+    'Juicy grilled chicken with herbs.',
+    '1. Marinate the chicken.
+2. Grill until cooked through.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'alicej'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Dessert'),
+    'Chocolate Cake',
+    'Rich and moist chocolate cake.',
+    '1. Prepare the batter.
+2. Bake in the oven.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'bobb'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Salad'),
+    'Caesar Salad',
+    'Fresh Caesar salad with croutons.',
+    '1. Toss lettuce with dressing.
+2. Add croutons and parmesan.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'carold'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Soup'),
+    'Tomato Soup',
+    'Warm and comforting tomato soup.',
+    '1. Cook tomatoes with garlic and onions.
+2. Blend and simmer.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'davidm'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Beverage'),
+    'Lemonade',
+    'Refreshing homemade lemonade.',
+    '1. Mix lemon juice with sugar and water.
+2. Serve chilled.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'evew'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Snack'),
+    'Nachos',
+    'Crunchy nachos with cheese and jalapeños.',
+    '1. Layer chips with cheese and toppings.
+2. Bake until melted.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'frankm'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Breakfast'),
+    'Pancakes',
+    'Fluffy pancakes with syrup.',
+    '1. Mix batter.
+2. Cook on griddle.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'gracet'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Lunch'),
+    'BLT Sandwich',
+    'Classic bacon, lettuce, and tomato sandwich.',
+    '1. Toast bread.
+2. Add bacon, lettuce, and tomato.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'hanka'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Dinner'),
+    'Steak with Veggies',
+    'Grilled steak served with roasted vegetables.',
+    '1. Grill the steak.
+2. Roast vegetables in the oven.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'johndoe'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Appetizer'),
+    'Stuffed Mushrooms',
+    'Mushrooms stuffed with cheese and herbs.',
+    '1. Remove stems from mushrooms.
+2. Fill with cheese mixture.
+3. Bake until golden.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'janesmith'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Main Course'),
+    'Spaghetti Bolognese',
+    'Traditional Italian meat sauce with spaghetti.',
+    '1. Cook spaghetti.
+2. Prepare Bolognese sauce.
+3. Combine and serve.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'alicej'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Dessert'),
+    'Apple Pie',
+    'Classic apple pie with flaky crust.',
+    '1. Prepare pie crust.
+2. Fill with apple mixture.
+3. Bake until golden.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'bobb'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Salad'),
+    'Greek Salad',
+    'Fresh salad with feta cheese and olives.',
+    '1. Combine vegetables and feta.
+2. Drizzle with olive oil and herbs.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'carold'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Soup'),
+    'Chicken Noodle Soup',
+    'Hearty soup with chicken and noodles.',
+    '1. Cook chicken with vegetables.
+2. Add noodles and simmer.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'davidm'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Beverage'),
+    'Iced Tea',
+    'Refreshing iced tea with lemon.',
+    '1. Brew tea.
+2. Add lemon and chill.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'evew'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Breakfast'),
+    'Omelette',
+    'Fluffy omelette with vegetables.',
+    '1. Beat eggs.
+2. Cook with vegetables in a pan.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'frankm'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Lunch'),
+    'Chicken Caesar Wrap',
+    'Grilled chicken with Caesar salad in a wrap.',
+    '1. Prepare Caesar salad.
+2. Wrap with grilled chicken in tortilla.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'gracet'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Dinner'),
+    'Lamb Chops',
+    'Tender lamb chops with herbs.',
+    '1. Marinate lamb chops.
+2. Grill to desired doneness.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'janesmith'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Appetizer'),
+    'Garlic Bread',
+    'Toasted bread with garlic butter.',
+    '1. Spread garlic butter on bread.
+2. Toast until golden.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'alicej'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Main Course'),
+    'Beef Stroganoff',
+    'Creamy beef dish with mushrooms.',
+    '1. Cook beef strips.
+2. Add mushrooms and sauce.
+3. Serve with noodles.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'bobb'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Dessert'),
+    'Cheesecake',
+    'Creamy cheesecake with a graham cracker crust.',
+    '1. Prepare crust.
+2. Mix filling.
+3. Bake until set.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'carold'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Salad'),
+    'Caprese Salad',
+    'Simple Italian salad with tomatoes, mozzarella, and basil.',
+    '1. Slice tomatoes and mozzarella.
+2. Layer with basil leaves.
+3. Drizzle with olive oil.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'davidm'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Soup'),
+    'Minestrone',
+    'Hearty Italian vegetable soup.',
+    '1. Cook vegetables and beans.
+2. Add broth and simmer.',
+    'default.jpg'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'evew'),
+    (SELECT id FROM "RecipeType" WHERE type = 'Beverage'),
+    'Mojito',
+    'Classic Cuban cocktail with mint and lime.',
+    '1. Muddle mint leaves with sugar and lime.
+2. Add rum and soda water.',
+    'default.jpg'
+);
+
+-- 7. Dodanie Składników do Przepisów (RecipeIngredients)
+
+-- Funkcja pomocnicza do przypisywania składników
+CREATE OR REPLACE FUNCTION assign_recipe_ingredient(recipe_name TEXT, ingredient_name TEXT, quantity TEXT)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO "RecipeIngredients" ("recipe_id", "ingredient_id", "quantity")
+    SELECT r.id, i.id, quantity
+    FROM "Recipe" r
+    JOIN "Ingredient" i ON r.name = recipe_name AND i.name = ingredient_name;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Przykładowe wywołania funkcji
+-- 7.1. Bruschetta
+SELECT assign_recipe_ingredient('Bruschetta', 'Tomato', '2 slices');
+SELECT assign_recipe_ingredient('Bruschetta', 'Basil', '1 tbsp');
+SELECT assign_recipe_ingredient('Bruschetta', 'Garlic', '1 clove');
+SELECT assign_recipe_ingredient('Bruschetta', 'Olive Oil', '1 tbsp');
+
+-- 7.2. Grilled Chicken
+SELECT assign_recipe_ingredient('Grilled Chicken', 'Chicken', '200g');
+SELECT assign_recipe_ingredient('Grilled Chicken', 'Salt', '1 tbsp');
+SELECT assign_recipe_ingredient('Grilled Chicken', 'Pepper', '1 tsp');
+
+-- 7.3. Chocolate Cake
+SELECT assign_recipe_ingredient('Chocolate Cake', 'Flour', '2 cups');
+SELECT assign_recipe_ingredient('Chocolate Cake', 'Sugar', '1 cup');
+SELECT assign_recipe_ingredient('Chocolate Cake', 'Eggs', '3 eggs');
+SELECT assign_recipe_ingredient('Chocolate Cake', 'Butter', '1/2 cup');
+SELECT assign_recipe_ingredient('Chocolate Cake', 'Milk', '1 cup');
+
+-- 7.4. Caesar Salad
+SELECT assign_recipe_ingredient('Caesar Salad', 'Lettuce', '1 head');
+SELECT assign_recipe_ingredient('Caesar Salad', 'Cucumber', '1 cucumber');
+SELECT assign_recipe_ingredient('Caesar Salad', 'Cheese', '50g');
+SELECT assign_recipe_ingredient('Caesar Salad', 'Olive Oil', '1 tbsp');
+
+-- 7.5. Tomato Soup
+SELECT assign_recipe_ingredient('Tomato Soup', 'Tomato', '4 tomatoes');
+SELECT assign_recipe_ingredient('Tomato Soup', 'Garlic', '2 cloves');
+SELECT assign_recipe_ingredient('Tomato Soup', 'Onion', '1 onion');
+SELECT assign_recipe_ingredient('Tomato Soup', 'Olive Oil', '1 tbsp');
+SELECT assign_recipe_ingredient('Tomato Soup', 'Salt', 'to taste');
+SELECT assign_recipe_ingredient('Tomato Soup', 'Pepper', 'to taste');
+
+-- 7.6. Lemonade
+SELECT assign_recipe_ingredient('Lemonade', 'Lemon', '2 lemons');
+SELECT assign_recipe_ingredient('Lemonade', 'Sugar', '1 cup');
+SELECT assign_recipe_ingredient('Lemonade', 'Water', '4 cups');
+
+-- 7.7. Nachos
+SELECT assign_recipe_ingredient('Nachos', 'Cheese', '100g');
+SELECT assign_recipe_ingredient('Nachos', 'Pepper', '50g');
+SELECT assign_recipe_ingredient('Nachos', 'Salt', '30g');
+
+-- 7.8. Pancakes
+SELECT assign_recipe_ingredient('Pancakes', 'Flour', '1 cup');
+SELECT assign_recipe_ingredient('Pancakes', 'Eggs', '2 eggs');
+SELECT assign_recipe_ingredient('Pancakes', 'Milk', '1 cup');
+SELECT assign_recipe_ingredient('Pancakes', 'Sugar', '2 tbsp');
+SELECT assign_recipe_ingredient('Pancakes', 'Butter', '2 tbsp');
+
+-- 7.9. BLT Sandwich
+SELECT assign_recipe_ingredient('BLT Sandwich', 'Tomato', '2 slices');
+SELECT assign_recipe_ingredient('BLT Sandwich', 'Bacon', '3 slices');
+SELECT assign_recipe_ingredient('BLT Sandwich', 'Lettuce', '1 head');
+SELECT assign_recipe_ingredient('BLT Sandwich', 'Olive Oil', '1 tbsp');
+
+-- 7.10. Steak with Veggies
+SELECT assign_recipe_ingredient('Steak with Veggies', 'Beef', '250g');
+SELECT assign_recipe_ingredient('Steak with Veggies', 'Carrot', '100g');
+SELECT assign_recipe_ingredient('Steak with Veggies', 'Potato', '100g');
+SELECT assign_recipe_ingredient('Steak with Veggies', 'Mushroom', '50g');
+SELECT assign_recipe_ingredient('Steak with Veggies', 'Salt', '1 tbsp');
+SELECT assign_recipe_ingredient('Steak with Veggies', 'Pepper', '1 tsp');
+
+-- 7.11. Stuffed Mushrooms
+SELECT assign_recipe_ingredient('Stuffed Mushrooms', 'Mushroom', '10 pieces');
+SELECT assign_recipe_ingredient('Stuffed Mushrooms', 'Cheese', '100g');
+SELECT assign_recipe_ingredient('Stuffed Mushrooms', 'Garlic', '1 tbsp');
+SELECT assign_recipe_ingredient('Stuffed Mushrooms', 'Basil', '1 tbsp');
+
+-- 7.12. Spaghetti Bolognese
+SELECT assign_recipe_ingredient('Spaghetti Bolognese', 'Beef', '200g');
+SELECT assign_recipe_ingredient('Spaghetti Bolognese', 'Onion', '1 onion');
+SELECT assign_recipe_ingredient('Spaghetti Bolognese', 'Garlic', '2 cloves');
+SELECT assign_recipe_ingredient('Spaghetti Bolognese', 'Olive Oil', '1 tbsp');
+SELECT assign_recipe_ingredient('Spaghetti Bolognese', 'Salt', '1 tsp');
+SELECT assign_recipe_ingredient('Spaghetti Bolognese', 'Pepper', '1 tsp');
+
+-- 7.13. Apple Pie
+SELECT assign_recipe_ingredient('Apple Pie', 'Apple', '3 apples');
+SELECT assign_recipe_ingredient('Apple Pie', 'Sugar', '1/2 cup');
+SELECT assign_recipe_ingredient('Apple Pie', 'Flour', '2 cups');
+SELECT assign_recipe_ingredient('Apple Pie', 'Eggs', '2 eggs');
+SELECT assign_recipe_ingredient('Apple Pie', 'Butter', '1 tbsp');
+
+-- 7.14. Greek Salad
+SELECT assign_recipe_ingredient('Greek Salad', 'Lettuce', '1 head');
+SELECT assign_recipe_ingredient('Greek Salad', 'Cucumber', '1 cucumber');
+SELECT assign_recipe_ingredient('Greek Salad', 'Cheese', '50g');
+SELECT assign_recipe_ingredient('Greek Salad', 'Pepper', '30g');
+
+-- 7.15. Chicken Noodle Soup
+SELECT assign_recipe_ingredient('Chicken Noodle Soup', 'Chicken', '200g');
+SELECT assign_recipe_ingredient('Chicken Noodle Soup', 'Carrot', '100g');
+SELECT assign_recipe_ingredient('Chicken Noodle Soup', 'Potato', '100g');
+SELECT assign_recipe_ingredient('Chicken Noodle Soup', 'Salt', '1 tbsp');
+SELECT assign_recipe_ingredient('Chicken Noodle Soup', 'Pepper', '1 tsp');
+
+-- 7.16. Iced Tea
+SELECT assign_recipe_ingredient('Iced Tea', 'Lemon', '2 lemons');
+SELECT assign_recipe_ingredient('Iced Tea', 'Sugar', '1 cup');
+SELECT assign_recipe_ingredient('Iced Tea', 'Water', '4 cups');
+
+-- 7.17. Omelette
+SELECT assign_recipe_ingredient('Omelette', 'Eggs', '3 eggs');
+SELECT assign_recipe_ingredient('Omelette', 'Milk', '1/4 cup');
+SELECT assign_recipe_ingredient('Omelette', 'Salt', '1 tbsp');
+SELECT assign_recipe_ingredient('Omelette', 'Pepper', '1 tsp');
+SELECT assign_recipe_ingredient('Omelette', 'Butter', '1 tbsp');
+
+-- 7.18. Chicken Caesar Wrap
+SELECT assign_recipe_ingredient('Chicken Caesar Wrap', 'Chicken', '150g');
+SELECT assign_recipe_ingredient('Chicken Caesar Wrap', 'Lettuce', '1 head');
+SELECT assign_recipe_ingredient('Chicken Caesar Wrap', 'Cheese', '50g');
+SELECT assign_recipe_ingredient('Chicken Caesar Wrap', 'Tortilla', '1 tortilla');
+SELECT assign_recipe_ingredient('Chicken Caesar Wrap', 'Olive Oil', '1 tbsp');
+
+-- 7.19. Lamb Chops
+SELECT assign_recipe_ingredient('Lamb Chops', 'Lamb', '250g');
+SELECT assign_recipe_ingredient('Lamb Chops', 'Salt', '1 tbsp');
+SELECT assign_recipe_ingredient('Lamb Chops', 'Pepper', '1 tsp');
+SELECT assign_recipe_ingredient('Lamb Chops', 'Olive Oil', '2 tbsp');
+SELECT assign_recipe_ingredient('Lamb Chops', 'Mint', '1 tbsp');
+
+-- 7.20. Garlic Bread
+SELECT assign_recipe_ingredient('Garlic Bread', 'Garlic', '3 cloves');
+SELECT assign_recipe_ingredient('Garlic Bread', 'Butter', '2 tbsp');
+SELECT assign_recipe_ingredient('Garlic Bread', 'Olive Oil', '1 tbsp');
+SELECT assign_recipe_ingredient('Garlic Bread', 'Tomato', '2 slices');
+
+-- 7.21. Beef Stroganoff
+SELECT assign_recipe_ingredient('Beef Stroganoff', 'Beef', '250g');
+SELECT assign_recipe_ingredient('Beef Stroganoff', 'Mushroom', '100g');
+SELECT assign_recipe_ingredient('Beef Stroganoff', 'Onion', '1 onion');
+SELECT assign_recipe_ingredient('Beef Stroganoff', 'Butter', '2 tbsp');
+SELECT assign_recipe_ingredient('Beef Stroganoff', 'Salt', '1 tbsp');
+SELECT assign_recipe_ingredient('Beef Stroganoff', 'Pepper', '1 tsp');
+
+-- 7.22. Cheesecake
+SELECT assign_recipe_ingredient('Cheesecake', 'Flour', '2 cups');
+SELECT assign_recipe_ingredient('Cheesecake', 'Sugar', '1 cup');
+SELECT assign_recipe_ingredient('Cheesecake', 'Eggs', '3 eggs');
+SELECT assign_recipe_ingredient('Cheesecake', 'Milk', '1 cup');
+SELECT assign_recipe_ingredient('Cheesecake', 'Butter', '1 tbsp');
+
+-- 7.23. Caprese Salad
+SELECT assign_recipe_ingredient('Caprese Salad', 'Tomato', '2 tomatoes');
+SELECT assign_recipe_ingredient('Caprese Salad', 'Cheese', '150g');
+SELECT assign_recipe_ingredient('Caprese Salad', 'Basil', '10 leaves');
+SELECT assign_recipe_ingredient('Caprese Salad', 'Olive Oil', '2 tbsp');
+
+-- 7.24. Minestrone
+SELECT assign_recipe_ingredient('Minestrone', 'Carrot', '100g');
+SELECT assign_recipe_ingredient('Minestrone', 'Potato', '100g');
+SELECT assign_recipe_ingredient('Minestrone', 'Onion', '1 onion');
+SELECT assign_recipe_ingredient('Minestrone', 'Garlic', '2 cloves');
+SELECT assign_recipe_ingredient('Minestrone', 'Olive Oil', '1 tbsp');
+SELECT assign_recipe_ingredient('Minestrone', 'Salt', 'to taste');
+SELECT assign_recipe_ingredient('Minestrone', 'Pepper', 'to taste');
+
+-- 7.25. Mojito
+SELECT assign_recipe_ingredient('Mojito', 'Mint', '10 leaves');
+SELECT assign_recipe_ingredient('Mojito', 'Sugar', '1 tbsp');
+SELECT assign_recipe_ingredient('Mojito', 'Rum', '50ml');
+
+-- Usuń funkcję pomocniczą, jeśli nie jest już potrzebna
+DROP FUNCTION assign_recipe_ingredient(TEXT, TEXT, TEXT);
+
+-- 8. Dodanie Recenzji Przepisów (RecipeReview)
+-- Upewnij się, że każdy przepis ma co najmniej jedną recenzję.
+
+INSERT INTO "RecipeReview" ("client_id", "recipe_id", "rating", "description")
+VALUES
+(
+    (SELECT id FROM "Client" WHERE login = 'johndoe'),
+    (SELECT id FROM "Recipe" WHERE name = 'Bruschetta'),
+    5,
+    'Excellent appetizer, very fresh!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'janesmith'),
+    (SELECT id FROM "Recipe" WHERE name = 'Grilled Chicken'),
+    4,
+    'Tasty chicken, but a bit salty.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'alicej'),
+    (SELECT id FROM "Recipe" WHERE name = 'Chocolate Cake'),
+    5,
+    'Delicious and moist!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'bobb'),
+    (SELECT id FROM "Recipe" WHERE name = 'Caesar Salad'),
+    3,
+    'Average salad, could use more dressing.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'carold'),
+    (SELECT id FROM "Recipe" WHERE name = 'Tomato Soup'),
+    4,
+    'Warm and comforting.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'davidm'),
+    (SELECT id FROM "Recipe" WHERE name = 'Lemonade'),
+    5,
+    'Perfect balance of sweet and tart!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'evew'),
+    (SELECT id FROM "Recipe" WHERE name = 'Nachos'),
+    4,
+    'Great crunch and cheese.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'frankm'),
+    (SELECT id FROM "Recipe" WHERE name = 'Pancakes'),
+    5,
+    'Fluffy and delicious!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'gracet'),
+    (SELECT id FROM "Recipe" WHERE name = 'BLT Sandwich'),
+    3,
+    'Good, but bacon was a bit soggy.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'hanka'),
+    (SELECT id FROM "Recipe" WHERE name = 'Steak with Veggies'),
+    5,
+    'Perfectly cooked steak!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'johndoe'),
+    (SELECT id FROM "Recipe" WHERE name = 'Stuffed Mushrooms'),
+    4,
+    'Delicious and savory!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'janesmith'),
+    (SELECT id FROM "Recipe" WHERE name = 'Spaghetti Bolognese'),
+    4,
+    'Great flavor, would make again.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'alicej'),
+    (SELECT id FROM "Recipe" WHERE name = 'Apple Pie'),
+    5,
+    'Best apple pie I have ever had!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'bobb'),
+    (SELECT id FROM "Recipe" WHERE name = 'Greek Salad'),
+    3,
+    'Fresh but a bit too much feta.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'carold'),
+    (SELECT id FROM "Recipe" WHERE name = 'Chicken Noodle Soup'),
+    4,
+    'Comforting and hearty.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'davidm'),
+    (SELECT id FROM "Recipe" WHERE name = 'Iced Tea'),
+    5,
+    'Very refreshing!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'evew'),
+    (SELECT id FROM "Recipe" WHERE name = 'Omelette'),
+    5,
+    'Perfectly cooked eggs.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'frankm'),
+    (SELECT id FROM "Recipe" WHERE name = 'Chicken Caesar Wrap'),
+    4,
+    'Good wrap, but a bit heavy.'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'gracet'),
+    (SELECT id FROM "Recipe" WHERE name = 'Lamb Chops'),
+    5,
+    'Tender and flavorful!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'janesmith'),
+    (SELECT id FROM "Recipe" WHERE name = 'Garlic Bread'),
+    4,
+    'Great garlic flavor!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'alicej'),
+    (SELECT id FROM "Recipe" WHERE name = 'Beef Stroganoff'),
+    5,
+    'Creamy and rich!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'bobb'),
+    (SELECT id FROM "Recipe" WHERE name = 'Cheesecake'),
+    4,
+    'Smooth and creamy!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'carold'),
+    (SELECT id FROM "Recipe" WHERE name = 'Caprese Salad'),
+    5,
+    'Fresh and tasty!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'davidm'),
+    (SELECT id FROM "Recipe" WHERE name = 'Minestrone'),
+    4,
+    'Hearty and flavorful!'
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'evew'),
+    (SELECT id FROM "Recipe" WHERE name = 'Mojito'),
+    5,
+    'Refreshing cocktail!'
+);
+
+-- 9. Dodanie 5 Zapytan (Request) od różnych klientów
+-- Każde zapytanie nie ma przypisanego recipe_id w tym miejscu
+
+INSERT INTO "Request" ("client_id", "withDelivery", "address", "electronicPayment")
+VALUES
+(
+    (SELECT id FROM "Client" WHERE login = 'johndoe'),
+    TRUE,
+    '789 Request St, Warsaw',
+    TRUE
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'janesmith'),
+    FALSE,
+    '101 Request Ave, Krakow',
+    TRUE
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'alicej'),
+    TRUE,
+    '202 Request Blvd, Gdansk',
+    FALSE
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'bobb'),
+    FALSE,
+    '303 Request Rd, Poznan',
+    TRUE
+),
+(
+    (SELECT id FROM "Client" WHERE login = 'carold'),
+    TRUE,
+    '404 Request Ln, Wroclaw',
+    TRUE
+);
+
+-- 10. Przypisanie Przepisów do Zapytan (RecipeRequest)
+-- Zakładam, że tabela RecipeRequest istnieje z kolumnami: recipe_id, request_id
+
+INSERT INTO "RecipeRequest" ("recipe_id", "request_id")
+VALUES
+(
+    (SELECT id FROM "Recipe" WHERE name = 'Bruschetta'),
+    (SELECT id FROM "Request" WHERE address = '789 Request St, Warsaw')
+),
+(
+    (SELECT id FROM "Recipe" WHERE name = 'Spaghetti Bolognese'),
+    (SELECT id FROM "Request" WHERE address = '101 Request Ave, Krakow')
+),
+(
+    (SELECT id FROM "Recipe" WHERE name = 'Lemonade'),
+    (SELECT id FROM "Request" WHERE address = '202 Request Blvd, Gdansk')
+),
+(
+    (SELECT id FROM "Recipe" WHERE name = 'Chicken Caesar Wrap'),
+    (SELECT id FROM "Request" WHERE address = '303 Request Rd, Poznan')
+),
+(
+    (SELECT id FROM "Recipe" WHERE name = 'Lamb Chops'),
+    (SELECT id FROM "Request" WHERE address = '404 Request Ln, Wroclaw')
+);
+
+-- 11. Dodanie Ofert (Offer) od wybranych restauracji odpowiadających na wybrane zapytania klientów
+-- Przypisujemy oferty tylko do wybranych zapytań
+
+INSERT INTO "Offer" ("request_id", "restaurant_id", "price", "notes", "waitingTime")
+VALUES
+(
+    (SELECT id FROM "Request" WHERE address = '789 Request St, Warsaw'),
+    (SELECT id FROM "Restaurant" WHERE login = 'pizzagreat'),
+    25.50,
+    'Special discount for new customers.',
+    '00:30:00'
+),
+(
+    (SELECT id FROM "Request" WHERE address = '202 Request Blvd, Gdansk'),
+    (SELECT id FROM "Restaurant" WHERE login = 'sushiworld'),
+    40.00,
+    'Exclusive sushi platter.',
+    '00:45:00'
+),
+(
+    (SELECT id FROM "Request" WHERE address = '303 Request Rd, Poznan'),
+    (SELECT id FROM "Restaurant" WHERE login = 'tacotown'),
+    20.00,
+    'Combo meal available.',
+    '00:25:00'
+);
+
+-- 12. Dodanie Powiązań między Restauracjami a Dostawcami (RestaurantDeliverer)
+INSERT INTO "RestaurantDeliverer" ("deliverer_id", "restaurant_id")
+VALUES
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'annad'),
+    (SELECT id FROM "Restaurant" WHERE login = 'pizzagreat')
+),
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'briank'),
+    (SELECT id FROM "Restaurant" WHERE login = 'burgerhouse')
+),
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'cathyl'),
+    (SELECT id FROM "Restaurant" WHERE login = 'sushiworld')
+),
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'davidz'),
+    (SELECT id FROM "Restaurant" WHERE login = 'tacotown')
+),
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'ellaw'),
+    (SELECT id FROM "Restaurant" WHERE login = 'pastapalace')
+),
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'frankk'),
+    (SELECT id FROM "Restaurant" WHERE login = 'currycorner')
+),
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'graces'),
+    (SELECT id FROM "Restaurant" WHERE login = 'saladstop')
+),
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'henryw'),
+    (SELECT id FROM "Restaurant" WHERE login = 'bbqbarn')
+),
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'ivyk'),
+    (SELECT id FROM "Restaurant" WHERE login = 'noodlenook')
+),
+(
+    (SELECT id FROM "Deliverer" WHERE login = 'jackm'),
+    (SELECT id FROM "Restaurant" WHERE login = 'steakstation')
+);
+
+-- 13. Finalne Sprawdzenie
+-- Możesz sprawdzić, czy dane zostały poprawnie wstawione, wykonując poniższe zapytania:
+-- SELECT * FROM "Client";
+-- SELECT * FROM "Restaurant";
+-- SELECT * FROM "Deliverer";
+-- SELECT * FROM "RecipeType";
+-- SELECT * FROM "Ingredient";
+-- SELECT * FROM "Recipe";
+-- SELECT * FROM "RecipeIngredients";
+-- SELECT * FROM "RecipeReview";
+-- SELECT * FROM "Request";
+-- SELECT * FROM "RecipeRequest";
+-- SELECT * FROM "Offer";
+-- SELECT * FROM "RestaurantDeliverer";
