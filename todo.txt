@@ -3,7 +3,8 @@ Mati -dla każdego usera panel z funkcjonanosciami (same Przyciski) (done)
 -w panelu klienta opcja manage your reviews
 Konrad -w panelu klienta opcja recipe management z opcjami edycji, usunięcia i dodania nowego przepisu (done)
 -w panelu klienta opcja order: wybranie przepisu/przepisów, uzupełnienie danych, stworzenie requestu, przeglądanie ofert (możliwosc akceptacji)
--w panelu restauracji przeglądanie requestów, mozliwosc wystawienia oferty w odpowiedzi na request, przeglanie ofert (zaakceptowanych i oczekujących) (done) (bez przeglądania offer bo nie ma takiegu PU ale moge dorobić) 
-- przypisanie zamówienia dostawcy w przypadku dostawy
+Konrad -w panelu restauracji przeglądanie requestów, mozliwosc wystawienia oferty w odpowiedzi na request (done) 
+-przeglanie ofert (zaakceptowanych i oczekujących)
+-przypisanie zamówienia dostawcy w przypadku dostawy
 -w panelu restauracji zmiana statusu zamówienia
 -w panelu dostawcy możliwosc przegladania przypisanych dostaw i zmiany ich statusu
