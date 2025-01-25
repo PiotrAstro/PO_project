@@ -167,14 +167,9 @@ def add_recipe():
             ingredient_ids = request.form.getlist('ingredient_ids[]')
             quantities = request.form.getlist('quantities[]')
 
-            # print(f"Form data: {request.form}")
-            # print(f"Ingredient IDs: {ingredient_ids}")
-            # print(f"Quantities: {quantities}")
-
             if not ingredient_ids or not quantities or len(ingredient_ids) != len(quantities):
                 raise ValueError("Ingredients and quantities cannot be empty or mismatched.")
 
-            # Insert recipe
             result = db.session.execute(
                 text('''
                     INSERT INTO "Recipe" (client_id, recipe_type_id, name, description, "recipeSteps", image_name)
@@ -191,9 +186,7 @@ def add_recipe():
                 }
             )
             recipe_id = result.fetchone()[0]
-            #print(f"Recipe ID: {recipe_id}")
 
-            # Insert ingredients
             for ingredient_id, quantity in zip(ingredient_ids, quantities):
                 db.session.execute(
                     text('''
@@ -219,7 +212,6 @@ def add_recipe():
 @client_required
 def edit_recipe(recipe_id):
     if request.method == 'POST':
-        # Zaktualizuj dane przepisu
         name = request.form['name']
         description = request.form['description']
         recipe_steps = request.form['recipeSteps']
@@ -227,11 +219,9 @@ def edit_recipe(recipe_id):
         ingredient_ids = request.form.getlist('ingredient_ids[]')
         quantities = request.form.getlist('quantities[]')
 
-        # Walidacja
         if not ingredient_ids or not quantities or len(ingredient_ids) != len(quantities):
             raise ValueError("Ingredients and quantities cannot be empty or mismatched.")
 
-        # Aktualizacja przepisu w bazie danych
         db.session.execute(
             text('''
                 UPDATE "Recipe"
@@ -249,7 +239,6 @@ def edit_recipe(recipe_id):
             }
         )
 
-        # Usuń istniejące składniki
         db.session.execute(
             text('''
                 DELETE FROM "RecipeIngredients"
@@ -258,7 +247,6 @@ def edit_recipe(recipe_id):
             {'recipe_id': recipe_id}
         )
 
-        # Dodaj zaktualizowane składniki
         for ingredient_id, quantity in zip(ingredient_ids, quantities):
             db.session.execute(
                 text('''
@@ -271,7 +259,6 @@ def edit_recipe(recipe_id):
         db.session.commit()
         return redirect(url_for('client.manage_recipes'))
 
-    # Pobierz dane przepisu
     recipe = db.session.execute(
         text('''
             SELECT * FROM "Recipe"
@@ -283,7 +270,6 @@ def edit_recipe(recipe_id):
     if not recipe:
         return "Recipe not found or unauthorized access.", 404
 
-    # Pobierz składniki przypisane do przepisu
     recipe_ingredients = db.session.execute(
         text('''
             SELECT ri.ingredient_id, i.name, ri.quantity
@@ -294,13 +280,8 @@ def edit_recipe(recipe_id):
         {'recipe_id': recipe_id}
     ).fetchall()
 
-    # Pobierz wszystkie składniki i typy przepisów
     recipe_types = db.session.execute(text('SELECT * FROM "RecipeType"')).fetchall()
     ingredients = db.session.execute(text('SELECT * FROM "Ingredient"')).fetchall()
-
-    # Debugowanie
-    # print(f"Recipe: {recipe}")
-    # print(f"Recipe Ingredients: {recipe_ingredients}")
 
     return render_template(
         'client/edit_recipe.html',
@@ -328,7 +309,6 @@ def remove_recipe(recipe_id):
     if not recipe:
         return "Recipe not found or unauthorized access.", 404
 
-    # Sprawdź, czy przepis nie jest powiązany z aktywnymi zamówieniami
     linked_orders = db.session.execute(
         text('''
             SELECT 1
@@ -343,12 +323,9 @@ def remove_recipe(recipe_id):
         {'recipe_id': recipe_id}
     ).fetchone()
 
-
-
     if linked_orders:
         return "Cannot delete recipe linked to active orders.", 400
 
-    # Usuń składniki przepisu
     db.session.execute(
         text('''
             DELETE FROM "RecipeIngredients"
@@ -357,7 +334,6 @@ def remove_recipe(recipe_id):
         {'recipe_id': recipe_id}
     )
 
-    # Usuń przepis
     db.session.execute(
         text('''
             DELETE FROM "Recipe"
@@ -366,7 +342,6 @@ def remove_recipe(recipe_id):
         {'recipe_id': recipe_id, 'client_id': current_user.id}
     )
 
-    # Usuń nieużywane składniki
     db.session.execute(
         text('''
             DELETE FROM "Ingredient"
@@ -420,7 +395,6 @@ def add_ingredient():
 @client_bp.route('/view_recipe/<int:recipe_id>', methods=['GET'])
 @client_required
 def view_recipe(recipe_id):
-    # Pobierz dane przepisu
     recipe = db.session.execute(
         text('''
             SELECT * FROM "Recipe"
@@ -432,7 +406,6 @@ def view_recipe(recipe_id):
     if not recipe:
         return "Recipe not found or unauthorized access.", 404
 
-    # Pobierz składniki przepisu
     recipe_ingredients = db.session.execute(
         text('''
             SELECT ri.quantity, i.name
@@ -442,11 +415,6 @@ def view_recipe(recipe_id):
         '''),
         {'recipe_id': recipe_id}
     ).fetchall()
-
-    # Debugging
-    print("Recipe:", recipe)
-    print("Steps:", recipe["recipeSteps"])  # Dodaj print, aby upewnić się, że dane są pobierane
-
 
     return render_template(
         'client/view_recipe.html',
