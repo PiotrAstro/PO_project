@@ -229,3 +229,295 @@ def get_orders(client_id):
         })
 
     return orders
+
+# ----------------------------
+def get_recipes_for_client(client_id: int):
+    """
+    Pobiera wszystkie przepisy danego klienta.
+    """
+    recipes = db.session.execute(
+        text('''
+            SELECT *
+            FROM "Recipe"
+            WHERE client_id = :client_id
+        '''),
+        {'client_id': client_id}
+    ).fetchall()
+    return recipes
+
+
+def create_recipe(client_id: int,
+                  recipe_type_id: int,
+                  name: str,
+                  description: str,
+                  recipe_steps: str,
+                  image_name: str,
+                  ingredient_ids: List[int],
+                  quantities: List[str]) -> int:
+    """
+    Tworzy nowy przepis i przypisuje do niego składniki.
+    Zwraca ID nowo utworzonego przepisu lub rzuca wyjątek w przypadku błędu.
+    """
+    try:
+        result = db.session.execute(
+            text('''
+                INSERT INTO "Recipe" (client_id, recipe_type_id, name, description, "recipeSteps", image_name)
+                VALUES (:client_id, :recipe_type_id, :name, :description, :recipe_steps, :image_name)
+                RETURNING id
+            '''),
+            {
+                'client_id': client_id,
+                'recipe_type_id': recipe_type_id,
+                'name': name,
+                'description': description,
+                'recipe_steps': recipe_steps,
+                'image_name': image_name
+            }
+        )
+        recipe_id = result.fetchone()[0]
+
+        # Dodawanie składników do tabeli RecipeIngredients
+        for ingredient_id, quantity in zip(ingredient_ids, quantities):
+            db.session.execute(
+                text('''
+                    INSERT INTO "RecipeIngredients" (recipe_id, ingredient_id, quantity)
+                    VALUES (:recipe_id, :ingredient_id, :quantity)
+                '''),
+                {'recipe_id': recipe_id, 'ingredient_id': ingredient_id, 'quantity': quantity}
+            )
+
+        db.session.commit()
+        return recipe_id
+
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def get_recipe_types():
+    """
+    Pobiera wszystkie możliwe typy przepisów (RecipeType).
+    """
+    recipe_types = db.session.execute(text('SELECT * FROM "RecipeType"')).fetchall()
+    return recipe_types
+
+
+def get_ingredients():
+    """
+    Pobiera wszystkie składniki (Ingredient).
+    """
+    ingredients = db.session.execute(text('SELECT * FROM "Ingredient"')).fetchall()
+    return ingredients
+
+
+def update_recipe(recipe_id: int,
+                  client_id: int,
+                  name: str,
+                  description: str,
+                  recipe_steps: str,
+                  recipe_type_id: int,
+                  ingredient_ids: List[int],
+                  quantities: List[str]) -> None:
+    """
+    Aktualizuje przepis (Recipe) i przypisuje mu nowe składniki (lub zmienione).
+    """
+    db.session.execute(
+        text('''
+            UPDATE "Recipe"
+            SET name = :name,
+                description = :description,
+                "recipeSteps" = :recipe_steps,
+                recipe_type_id = :recipe_type_id
+            WHERE id = :recipe_id
+              AND client_id = :client_id
+        '''),
+        {
+            'name': name,
+            'description': description,
+            'recipe_steps': recipe_steps,
+            'recipe_type_id': recipe_type_id,
+            'recipe_id': recipe_id,
+            'client_id': client_id
+        }
+    )
+
+    # Najpierw usuwamy wszystkie składniki przepisu, aby potem dodać je ponownie.
+    db.session.execute(
+        text('''
+            DELETE FROM "RecipeIngredients"
+            WHERE recipe_id = :recipe_id
+        '''),
+        {'recipe_id': recipe_id}
+    )
+
+    # Dodajemy aktualne składniki
+    for ingredient_id, quantity in zip(ingredient_ids, quantities):
+        db.session.execute(
+            text('''
+                INSERT INTO "RecipeIngredients" (recipe_id, ingredient_id, quantity)
+                VALUES (:recipe_id, :ingredient_id, :quantity)
+            '''),
+            {'recipe_id': recipe_id, 'ingredient_id': ingredient_id, 'quantity': quantity}
+        )
+
+    db.session.commit()
+
+
+def get_recipe_by_id(recipe_id: int, client_id: int):
+    """
+    Zwraca pojedynczy przepis (Recipe) dla danego klienta.
+    """
+    recipe = db.session.execute(
+        text('''
+            SELECT *
+            FROM "Recipe"
+            WHERE id = :recipe_id
+              AND client_id = :client_id
+        '''),
+        {'recipe_id': recipe_id, 'client_id': client_id}
+    ).fetchone()
+    return recipe
+
+
+def get_recipe_ingredients(recipe_id: int):
+    """
+    Zwraca składniki powiązane z danym przepisem.
+    """
+    recipe_ingredients = db.session.execute(
+        text('''
+            SELECT ri.ingredient_id, i.name, ri.quantity
+            FROM "RecipeIngredients" ri
+            JOIN "Ingredient" i ON ri.ingredient_id = i.id
+            WHERE ri.recipe_id = :recipe_id
+        '''),
+        {'recipe_id': recipe_id}
+    ).fetchall()
+    return recipe_ingredients
+
+
+def remove_recipe(recipe_id: int, client_id: int) -> bool:
+    """
+    Usuwa przepis o danym ID należący do klienta, o ile nie ma powiązanych zamówień.
+    Zwraca True w przypadku powodzenia usunięcia, False jeśli powiązania uniemożliwiają usunięcie.
+    """
+    # Sprawdzamy, czy przepis w ogóle istnieje i należy do danego klienta
+    recipe = db.session.execute(
+        text('''
+            SELECT *
+            FROM "Recipe"
+            WHERE id = :recipe_id
+              AND client_id = :client_id
+        '''),
+        {
+            'recipe_id': recipe_id,
+            'client_id': client_id
+        }
+    ).fetchone()
+
+    if not recipe:
+        return False  # Brak przepisu lub nieautoryzowany dostęp
+
+    # Sprawdzamy, czy są powiązane Requesty (RecipeRequest + Request)
+    linked_requests = db.session.execute(
+        text('''
+            SELECT 1
+            FROM "RecipeRequest" rr
+            JOIN "Request" r ON rr.request_id = r.id
+            WHERE rr.recipe_id = :recipe_id
+        '''),
+        {'recipe_id': recipe_id}
+    ).fetchone()
+
+    if linked_requests:
+        return False  # Nie można usunąć przepisu powiązanego z istniejącymi Requestami
+
+    # Usuwamy powiązane składniki
+    db.session.execute(
+        text('''
+            DELETE FROM "RecipeIngredients"
+            WHERE recipe_id = :recipe_id
+        '''),
+        {'recipe_id': recipe_id}
+    )
+
+    # Usuwamy sam przepis
+    db.session.execute(
+        text('''
+            DELETE FROM "Recipe"
+            WHERE id = :recipe_id
+              AND client_id = :client_id
+        '''),
+        {'recipe_id': recipe_id, 'client_id': client_id}
+    )
+
+    # Usuwamy "osierocone" składniki, które nie występują już w żadnym przepisie
+    db.session.execute(
+        text('''
+            DELETE FROM "Ingredient"
+            WHERE id NOT IN (
+                SELECT DISTINCT ingredient_id
+                FROM "RecipeIngredients"
+            )
+        ''')
+    )
+
+    db.session.commit()
+    return True
+
+
+def add_recipe_type(recipe_type: str) -> None:
+    """
+    Dodaje nowy typ przepisu (RecipeType).
+    """
+    db.session.execute(
+        text('''
+            INSERT INTO "RecipeType" (type)
+            VALUES (:type)
+        '''),
+        {'type': recipe_type}
+    )
+    db.session.commit()
+
+
+def add_ingredient(ingredient_name: str) -> None:
+    """
+    Dodaje nowy składnik (Ingredient).
+    """
+    db.session.execute(
+        text('''
+            INSERT INTO "Ingredient" (name)
+            VALUES (:name)
+        '''),
+        {'name': ingredient_name}
+    )
+    db.session.commit()
+
+
+def get_recipe_for_view(recipe_id: int, client_id: int):
+    """
+    Zwraca przepis (w formie Mapping lub None) i listę składników do wyświetlenia.
+    """
+    recipe = db.session.execute(
+        text('''
+            SELECT *
+            FROM "Recipe"
+            WHERE id = :recipe_id
+              AND client_id = :client_id
+        '''),
+        {'recipe_id': recipe_id, 'client_id': client_id}
+    ).mappings().fetchone()
+
+    if not recipe:
+        return None, None
+
+    recipe_ingredients = db.session.execute(
+        text('''
+            SELECT ri.quantity, i.name
+            FROM "RecipeIngredients" ri
+            JOIN "Ingredient" i ON ri.ingredient_id = i.id
+            WHERE ri.recipe_id = :recipe_id
+        '''),
+        {'recipe_id': recipe_id}
+    ).fetchall()
+
+    return recipe, recipe_ingredients

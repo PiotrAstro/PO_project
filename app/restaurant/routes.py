@@ -11,6 +11,8 @@ from app.restaurant.form import CreateDeliveryForm, EditOrderForm
 import app.restaurant.restaurant as restaurant
 from app.models import OrderStatus, Restaurant, db
 from sqlalchemy import text
+from flask import flash
+from app.restaurant.restaurant import get_available_requests, create_offer
 
 restaurant_bp = Blueprint('restaurant', __name__, url_prefix='/restaurant')
 
@@ -155,34 +157,7 @@ def select_deliverer():
 @restaurant_bp.route('/browse_requests')
 @restaurant_required
 def browse_requests():
-    requests = db.session.execute(
-        text('''
-            SELECT r.id AS request_id,
-                   c.name || ' ' || c.surname AS client_name,
-                   string_agg(ri.name, ', ') AS ordered_items,
-                   r."withDelivery",
-                   r.address,
-                   r."electronicPayment"
-            FROM "Request" r
-            JOIN "Client" c ON r.client_id = c.id
-            JOIN "RecipeRequest" rr ON r.id = rr.request_id
-            JOIN "Recipe" ri ON rr.recipe_id = ri.id
-            WHERE r.id NOT IN (
-                SELECT o.request_id
-                FROM "Offer" o
-                LEFT JOIN "Orders" ord ON o.id = ord.offer_id
-                WHERE ord.id IS NOT NULL
-            )
-            AND r.id NOT IN (
-                SELECT o.request_id
-                FROM "Offer" o
-                WHERE o.restaurant_id = :restaurant_id
-            )
-            GROUP BY r.id, c.name, c.surname, r."withDelivery", r.address, r."electronicPayment"
-        '''),
-        {'restaurant_id': current_user.id}
-    ).fetchall()
-
+    requests = get_available_requests(current_user.id)
     return render_template('restaurant/browse_requests.html', requests=requests)
 
 
@@ -190,29 +165,30 @@ def browse_requests():
 @restaurant_required
 def make_offer(request_id):
     if request.method == 'POST':
-        price = request.form['price']
-        notes = request.form['notes']
-        waiting_time = request.form['waitingTime']
-        restaurant_id = current_user.id
+        try:
+            price = float(request.form['price'])
+            notes = request.form['notes']
+            waiting_time = request.form['waitingTime']
+            restaurant_id = current_user.id
 
-        if float(price) <= 0:
-            return "Price must be positive", 400
+            if price <= 0:
+                flash("Price must be positive.", "error")
+                return redirect(url_for('restaurant.make_offer', request_id=request_id))
 
-        db.session.execute(
-            text('''
-                INSERT INTO "Offer" (request_id, restaurant_id, price, notes, "waitingTime")
-                VALUES (:request_id, :restaurant_id, :price, :notes, :waiting_time)
-            '''),
-            {
-                'request_id': request_id,
-                'restaurant_id': restaurant_id,
-                'price': price,
-                'notes': notes,
-                'waiting_time': waiting_time
-            }
-        )
-        db.session.commit()
+            # Cała logika tworzenia oferty w pliku restaurants.py
+            create_offer(
+                restaurant_id=restaurant_id,
+                request_id=request_id,
+                price=price,
+                notes=notes,
+                waiting_time=waiting_time
+            )
 
-        return redirect(url_for('restaurant.browse_requests'))
+            return redirect(url_for('restaurant.browse_requests'))
+
+        except ValueError:
+            # Gdy `float(...)` się nie powiedzie lub brakuje danych
+            flash("Invalid price value.", "error")
+            return redirect(url_for('restaurant.make_offer', request_id=request_id))
 
     return render_template('restaurant/make_offer.html', request_id=request_id)

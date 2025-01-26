@@ -1,6 +1,7 @@
 import datetime
 from typing import Optional
 from app.models import Deliverer, Delivery, DeliveryStatus, OrderStatus, Orders, Restaurant, db, Offer
+from sqlalchemy import text
 
 
 def get_user(login: str, password: str) -> Optional[Restaurant]:
@@ -91,3 +92,54 @@ def cancel_order(order_id: int, restaurant_id: int) -> Orders:
 def get_available_deliverers(restaurant_id: int) -> list[tuple[int, str]]:
     restaurant = Restaurant.query.get_or_404(restaurant_id)
     return restaurant.deliverers
+
+
+def get_available_requests(restaurant_id: int):
+    """
+    Zwraca listę dostępnych 'requestów' (zapytań) złożonych przez klientów,
+    dla których restauracja może złożyć ofertę (czyli takich, gdzie nie ma jeszcze
+    innej oferty zaakceptowanej lub przypisanej do zamówienia).
+    """
+    sql = text('''
+        SELECT r.id AS request_id,
+               c.name || ' ' || c.surname AS client_name,
+               string_agg(ri.name, ', ') AS ordered_items,
+               r."withDelivery",
+               r.address,
+               r."electronicPayment"
+        FROM "Request" r
+        JOIN "Client" c ON r.client_id = c.id
+        JOIN "RecipeRequest" rr ON r.id = rr.request_id
+        JOIN "Recipe" ri ON rr.recipe_id = ri.id
+        WHERE r.id NOT IN (
+            SELECT o.request_id
+            FROM "Offer" o
+            LEFT JOIN "Orders" ord ON o.id = ord.offer_id
+            WHERE ord.id IS NOT NULL
+        )
+        AND r.id NOT IN (
+            SELECT o.request_id
+            FROM "Offer" o
+            WHERE o.restaurant_id = :restaurant_id
+        )
+        GROUP BY r.id, c.name, c.surname, r."withDelivery", r.address, r."electronicPayment"
+    ''')
+    return db.session.execute(sql, {'restaurant_id': restaurant_id}).fetchall()
+
+
+def create_offer(restaurant_id: int, request_id: int, price: float, notes: str, waiting_time: str):
+    """
+    Tworzy ofertę (Offer) dla konkretnego requestu.
+    """
+    sql = text('''
+        INSERT INTO "Offer" (request_id, restaurant_id, price, notes, "waitingTime")
+        VALUES (:request_id, :restaurant_id, :price, :notes, :waiting_time)
+    ''')
+    db.session.execute(sql, {
+        'request_id': request_id,
+        'restaurant_id': restaurant_id,
+        'price': price,
+        'notes': notes,
+        'waiting_time': waiting_time
+    })
+    db.session.commit()
