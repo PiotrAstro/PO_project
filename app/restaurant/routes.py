@@ -151,29 +151,7 @@ def select_deliverer():
     return redirect(url_for('restaurant.browse_orders'))
 
 
-# @restaurant_bp.route('/browse_requests')
-# @restaurant_required
-# def browse_requests():
-#     requests = db.session.execute(
-#         text('''
-#             SELECT r.id AS request_id,
-#                    c.name || ' ' || c.surname AS client_name,
-#                    string_agg(ri.name, ', ') AS ordered_items,
-#                    r."withDelivery",
-#                    r.address,
-#                    r."electronicPayment"
-#             FROM "Request" r
-#             JOIN "Client" c ON r.client_id = c.id
-#             JOIN "RecipeRequest" rr ON r.id = rr.request_id
-#             JOIN "Recipe" ri ON rr.recipe_id = ri.id
-#             WHERE r.id NOT IN (
-#                 SELECT request_id FROM "Offer"
-#             )
-#             GROUP BY r.id, c.name, c.surname, r."withDelivery", r.address, r."electronicPayment"
-#         ''')
-#     ).fetchall()
 
-#     return render_template('restaurant/browse_requests.html', requests=requests)
 @restaurant_bp.route('/browse_requests')
 @restaurant_required
 def browse_requests():
