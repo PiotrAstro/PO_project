@@ -84,8 +84,7 @@ def get_all_recipes():
     return recipes
 
 
-
-def create_request(client_id, withDelivery, address, electronic_payment) :
+def create_request(client_id, withDelivery, address, electronic_payment):
     try:
         new_request = Request(
             client_id=client_id,
@@ -117,7 +116,7 @@ def associate_recipes_to_request(request_id, recipe_ids):
     db.session.commit()
 
 
-def get_available_offers(client_id: int):
+def get_available_offers(client_id):
     subquery = db.session.query(Request.id).join(Offer).join(Orders).filter(
         Request.client_id == client_id
     ).distinct().subquery()
@@ -135,13 +134,15 @@ def get_available_offers(client_id: int):
             'dish_names': ', '.join(dish_names),
             'restaurant_name': offer.restaurant.name,
             'price': offer.price,
-            'waitingTime': offer.waitingTime.strftime('%H:%M:%S') if offer.waitingTime else None
+            'waitingTime': offer.waitingTime.strftime('%H:%M:%S') if offer.waitingTime else None,
+            'request_id': offer.request.id,
+            'address': offer.request.address
         })
 
     return offer_list
 
 
-def accept_offer(offer_id: int, client_id: int) -> bool:
+def accept_offer(offer_id, client_id):
     offer = Offer.query.join(Request).filter(
         Offer.id == offer_id,
         Request.client_id == client_id
@@ -172,7 +173,7 @@ def accept_offer(offer_id: int, client_id: int) -> bool:
         return False
 
 
-def get_orders(client_id: int):
+def get_orders(client_id):
     query = text('''
         SELECT 
             "Orders".id AS order_id, 
