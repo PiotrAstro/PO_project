@@ -292,6 +292,7 @@ def add_recipe():
     recipe_types = db.session.execute(text('SELECT * FROM "RecipeType"')).fetchall()
     ingredients = db.session.execute(text('SELECT * FROM "Ingredient"')).fetchall()
 
+    flash("Recipe added successfully.", "success")
     return render_template('client/add_recipe.html', recipe_types=recipe_types, ingredients=ingredients)
 
 
@@ -370,6 +371,8 @@ def edit_recipe(recipe_id):
     recipe_types = db.session.execute(text('SELECT * FROM "RecipeType"')).fetchall()
     ingredients = db.session.execute(text('SELECT * FROM "Ingredient"')).fetchall()
 
+    flash("Recipe updated successfully.", "success")
+
     return render_template(
         'client/edit_recipe.html',
         recipe=recipe,
@@ -396,22 +399,19 @@ def remove_recipe(recipe_id):
     if not recipe:
         return "Recipe not found or unauthorized access.", 404
 
-    linked_orders = db.session.execute(
+    linked_requests = db.session.execute(
         text('''
             SELECT 1
-            FROM "Offer" o
-            JOIN "Orders" ord ON o.id = ord.offer_id
-            WHERE o.request_id IN (
-                SELECT rr.request_id
-                FROM "RecipeRequest" rr
-                WHERE rr.recipe_id = :recipe_id
-            ) AND ord."orderStatus" IN ('InPreparation', 'InDelivery', 'WaitingForDelivery')
+            FROM "RecipeRequest" rr
+            JOIN "Request" r ON rr.request_id = r.id
+            WHERE rr.recipe_id = :recipe_id
         '''),
         {'recipe_id': recipe_id}
     ).fetchone()
 
-    if linked_orders:
-        return "Cannot delete recipe linked to active orders.", 400
+    if linked_requests:
+        flash("Cannot delete recipe linked to existing requests.", "error")
+        return redirect(url_for('client.manage_recipes'))
 
     db.session.execute(
         text('''
@@ -440,6 +440,7 @@ def remove_recipe(recipe_id):
     )
 
     db.session.commit()
+    flash('Recipe deleted successfully.', 'success')
     return redirect(url_for('client.manage_recipes'))
 
 

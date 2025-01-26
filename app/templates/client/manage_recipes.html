@@ -2,9 +2,35 @@
 
 {% block extra_head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
+    <style>
+        .flash-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <h2 class="panel-title">Manage Recipes</h2>
 
     <div class="button-container">
@@ -35,7 +61,6 @@
                         <button type="submit" class="panel-button">Remove</button>
                     </form>
                 </td>
-                
             </tr>
             {% endfor %}
         </tbody>
@@ -44,4 +69,13 @@
     <a href="{{ url_for('client.panel') }}">
         <button class="panel-button">Back to Panel</button>
     </a>
+
+    <script>
+        setTimeout(() => {
+            const flashMessages = document.getElementById('flash-messages');
+            if (flashMessages) {
+                flashMessages.remove();
+            }
+        }, 5000);
+    </script>
 {% endblock %}
