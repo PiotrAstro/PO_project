@@ -1,36 +1,137 @@
+<!-- app/templates/client/edit_review.html -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Edit Review</title>
+    <style>
+        body {
+            background-color: #f5f5f5; /* Szare tło */
+            color: #000000; /* Czarny tekst */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #f5f5f5; /* Szare tło kontenera */
+            padding: 30px;
+            border-radius: 8px;
+            width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 10px;
+        }
+
+        input[type="number"], textarea {
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #000000;
+            border-radius: 4px;
+            background-color: #ffffff; /* Białe pola formularza dla lepszej czytelności */
+            color: #000000;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            background-color: #000000; /* Czarny przycisk */
+            color: #FFFFFF; /* Biały tekst */
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #333333; /* Ciemniejszy szary na hover */
+        }
+
+        .buttons-container {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .buttons-container a {
+            text-decoration: none;
+        }
+
+        .buttons-container a button {
+            background-color: #000000;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+
+        .buttons-container a button:hover {
+            background-color: #333333;
+        }
+
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+            color: #ff0000; /* Czerwony kolor dla komunikatów */
+            text-align: center;
+        }
+
+        .flashes li {
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Edit Review for "{{ review.recipe_name }}"</h1>
+    <div class="container">
+        <h1>Edit Review for "{{ review.recipe_name }}"</h1>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul class="flashes">
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
 
-    <form action="{{ url_for('client.edit_review', review_id=review.recipe_id) }}" method="POST">
-        <label for="rating">Rating (1-5):</label>
-        <input type="number" id="rating" name="rating" min="1" max="5" value="{{ review.rating }}" required>
-        <br><br>
+        <form action="{{ url_for('client.edit_review', review_id=review.recipe_id) }}" method="POST">
+            <label for="rating">Rating (1-5):</label>
+            <input type="number" id="rating" name="rating" min="1" max="5" value="{{ review.rating }}" required>
 
-        <label for="description">Description:</label>
-        <textarea id="description" name="description" rows="4" cols="50" required>{{ review.description }}</textarea>
-        <br><br>
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="4" required>{{ review.description }}</textarea>
 
-        <button type="submit">Update Review</button>
-    </form>
+            <button type="submit">Update Review</button>
+        </form>
 
-    <br>
-    <a href="{{ url_for('client.manage_reviews') }}"><button>Back to Manage Reviews</button></a>
+        <div class="buttons-container">
+            <a href="{{ url_for('client.manage_reviews') }}"><button>Back to Manage Reviews</button></a>
+        </div>
+    </div>
 </body>
 </html>

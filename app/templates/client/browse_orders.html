@@ -6,6 +6,20 @@
     <meta charset="UTF-8">
     <title>Browse Orders</title>
     <style>
+        body {
+            background-color: #f5f5f5; /* Szare tło */
+            color: #000000; /* Czarny tekst */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #000000;
+            margin-bottom: 20px;
+        }
+
         .category {
             margin-bottom: 30px;
         }
@@ -14,10 +28,11 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 10px;
+            background-color: #f5f5f5; /* Szare tło tabeli */
         }
 
         table, th, td {
-            border: 1px solid #ddd;
+            border: 1px solid #000000; /* Czarny obramowanie */
         }
 
         th, td {
@@ -26,14 +41,15 @@
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: #dcdcdc; /* Ciemniejszy szary dla nagłówków */
         }
 
         .flashes {
             list-style-type: none;
             padding: 0;
             margin: 10px 0;
-            color: green;
+            color: #ff0000; /* Czerwony kolor dla komunikatów */
+            text-align: center;
         }
 
         .flashes li {
@@ -41,16 +57,59 @@
         }
 
         .category-header {
-            background-color: #e0e0e0;
+            background-color: #dcdcdc; /* Ciemniejszy szary */
             padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            text-align: center;
             font-size: 1.2em;
-            margin-bottom: 10px;
+        }
+
+        .category-header strong {
+            color: #000000;
         }
 
         button {
-            padding: 6px 10px;
-            margin-right: 5px;
+            background-color: #000000; /* Czarny przycisk */
+            color: #FFFFFF; /* Biały tekst */
+            border: none;
+            padding: 8px 16px;
             cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #333333; /* Ciemniejszy szary na hover */
+        }
+
+        .buttons-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .buttons-container a {
+            text-decoration: none;
+        }
+
+        .buttons-container a button {
+            background-color: #000000;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+
+        .buttons-container a button:hover {
+            background-color: #333333;
+        }
+
+        .no-orders {
+            text-align: center;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -93,7 +152,7 @@
                     </tbody>
                 </table>
             {% else %}
-                <p>No delivered orders.</p>
+                <p class="no-orders">No delivered orders.</p>
             {% endif %}
         </div>
 
@@ -122,7 +181,7 @@
                     </tbody>
                 </table>
             {% else %}
-                <p>No canceled orders.</p>
+                <p class="no-orders">No canceled orders.</p>
             {% endif %}
         </div>
 
@@ -151,14 +210,16 @@
                     </tbody>
                 </table>
             {% else %}
-                <p>No orders in progress.</p>
+                <p class="no-orders">No orders in progress.</p>
             {% endif %}
         </div>
     {% else %}
-        <p>No orders available.</p>
+        <p class="no-orders">No orders available.</p>
     {% endif %}
 
     <br>
-    <a href="{{ url_for('client.panel') }}"><button>Back to Panel</button></a>
+    <div class="buttons-container">
+        <a href="{{ url_for('client.panel') }}"><button>Back to Panel</button></a>
+    </div>
 </body>
 </html>
