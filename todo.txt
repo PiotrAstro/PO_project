@@ -14,4 +14,4 @@ Konrad -w panelu restauracji przeglądanie requestów, mozliwosc wystawienia ofe
 -zmienic tak zeby wiele restauracji moglo dodawac offer na jakis request (teraz moze tylko jedna) - Konrad
 -tabelka podzielona na current delivieries, canceled/finished
 
--inne oferty nie znikają kiedy jedna jest zaakceptowana
+-inne oferty nie znikają kiedy jedna jest zaakceptowana(done)
