@@ -2,16 +2,16 @@ Mati -dla każdego usera panel z funkcjonanosciami (same Przyciski) (done)
 -browsing recipies dla panelu klienta i goscia (wyszukiwanie LIKE, konwersja do lowercase?), wyswietlenie przepisow
 -w panelu klienta opcja manage your reviews (done)
 Konrad -w panelu klienta opcja recipe management z opcjami edycji, usunięcia i dodania nowego przepisu (done)
--w panelu klienta opcja order: wybranie przepisu/przepisów, uzupełnienie danych, stworzenie requestu, przeglądanie ofert (możliwosc akceptacji)
+-w panelu klienta opcja order: wybranie przepisu/przepisów, uzupełnienie danych, stworzenie requestu, przeglądanie ofert (możliwosc akceptacji) (done)
 Konrad -w panelu restauracji przeglądanie requestów, mozliwosc wystawienia oferty w odpowiedzi na request (done) 
 -przeglanie ofert (zaakceptowanych i oczekujących)
 -przypisanie zamówienia dostawcy w przypadku dostawy
 -w panelu restauracji zmiana statusu zamówienia
 -w panelu dostawcy możliwosc przegladania przypisanych dostaw i zmiany ich statusu
--w order request wybór oferty wystawionej w odpowiedzi na request
--rozdzielic na requesty w browse offers
+-w order request wybór oferty wystawionej w odpowiedzi na request (done)
+-rozdzielic na requesty w browse offers (done)
 -usuwanie przepisu tylko jesli nie jest w request - Konrad
 -zmienic tak zeby wiele restauracji moglo dodawac offer na jakis request (teraz moze tylko jedna) - Konrad
--tabelka podzielona na current delivieries, canceled/finished
+-tabelka podzielona na current delivieries, canceled/finished (done)
 
 -inne oferty nie znikają kiedy jedna jest zaakceptowana(done)
