@@ -15,3 +15,4 @@ Konrad -w panelu restauracji przeglądanie requestów, mozliwosc wystawienia ofe
 -tabelka podzielona na current delivieries, canceled/finished (done)
 
 -inne oferty nie znikają kiedy jedna jest zaakceptowana(done)
+-trzeba zrobić wylogowywanie - przechodzenie na stronę główną
