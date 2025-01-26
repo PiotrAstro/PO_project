@@ -118,9 +118,13 @@ def associate_recipes_to_request(request_id, recipe_ids):
 
 
 def get_available_offers(client_id: int):
+    subquery = db.session.query(Request.id).join(Offer).join(Orders).filter(
+        Request.client_id == client_id
+    ).distinct().subquery()
+
     offers = db.session.query(Offer).join(Request).filter(
         Request.client_id == client_id,
-        ~db.session.query(Orders).filter(Orders.offer_id == Offer.id).exists()
+        ~Offer.request_id.in_(subquery)
     ).all()
 
     offer_list = []
