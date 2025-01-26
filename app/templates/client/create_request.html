@@ -1,8 +1,57 @@
+<!-- app/templates/client/create_request.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Create Request</title>
+    <style>
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+            color: green;
+        }
+
+        .flashes li {
+            margin-bottom: 5px;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .recipe-list {
+            max-height: 200px; /* Możesz dostosować wysokość */
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 5px;
+        }
+
+        .recipe-item {
+            margin-bottom: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <h1>Create a New Request</h1>
@@ -19,25 +68,31 @@
 
     <form action="{{ url_for('client.create_request') }}" method="POST">
         <label>Select Recipes:</label>
-        {% for recipe in recipes %}
-            <div class="recipe-item">
-                <input type="checkbox" name="recipe_ids" value="{{ recipe.id }}" id="recipe_{{ recipe.id }}">
-                <label for="recipe_{{ recipe.id }}">{{ recipe.name }}</label>
-            </div>
-        {% endfor %}
+        <div class="recipe-list">
+            {% for recipe in recipes %}
+                <div class="recipe-item">
+                    <input type="checkbox" name="recipe_ids" value="{{ recipe.id }}" id="recipe_{{ recipe.id }}">
+                    <label for="recipe_{{ recipe.id }}">{{ recipe.name }}</label>
+                </div>
+            {% endfor %}
+        </div>
+        <br>
 
         <label for="with_delivery">
             <input type="checkbox" id="with_delivery" name="with_delivery" value="true">
             Delivery
         </label>
+        <br>
 
         <label for="electronic_payment">
             <input type="checkbox" id="electronic_payment" name="electronic_payment" value="true">
             Electronic Payment
         </label>
+        <br>
 
         <label for="address">Address:</label>
         <textarea id="address" name="address" rows="3" placeholder="Enter your address here..."></textarea>
+        <br>
 
         <button type="submit">Create Request</button>
     </form>

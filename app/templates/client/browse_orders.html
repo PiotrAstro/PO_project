@@ -5,11 +5,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Browse Orders</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
     <style>
+        .category {
+            margin-bottom: 30px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 10px;
         }
 
         table, th, td {
@@ -36,6 +40,13 @@
             margin-bottom: 5px;
         }
 
+        .category-header {
+            background-color: #e0e0e0;
+            padding: 10px;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
         button {
             padding: 6px 10px;
             margin-right: 5px;
@@ -57,26 +68,92 @@
     {% endwith %}
 
     {% if orders %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Dish Names</th>
-                    <th>Restaurant</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order in orders %}
-                <tr>
-                    <td>{{ order.dish_names }}</td>
-                    <td>{{ order.restaurant_name }}</td>
-                    <td>{{ order.price }}</td>
-                    <td>{{ order.orderStatus }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="category">
+            <div class="category-header">Delivered Orders</div>
+            {% set delivered_orders = orders | selectattr('orderStatus', 'equalto', 'Delivered') | list %}
+            {% if delivered_orders %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dish Names</th>
+                            <th>Restaurant</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in delivered_orders %}
+                        <tr>
+                            <td>{{ order.dish_names }}</td>
+                            <td>{{ order.restaurant_name }}</td>
+                            <td>{{ order.price }}</td>
+                            <td>{{ order.orderStatus }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No delivered orders.</p>
+            {% endif %}
+        </div>
+
+        <div class="category">
+            <div class="category-header">Canceled Orders</div>
+            {% set canceled_orders = orders | selectattr('orderStatus', 'equalto', 'Canceled') | list %}
+            {% if canceled_orders %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dish Names</th>
+                            <th>Restaurant</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in canceled_orders %}
+                        <tr>
+                            <td>{{ order.dish_names }}</td>
+                            <td>{{ order.restaurant_name }}</td>
+                            <td>{{ order.price }}</td>
+                            <td>{{ order.orderStatus }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No canceled orders.</p>
+            {% endif %}
+        </div>
+
+        <div class="category">
+            <div class="category-header">Orders in Progress</div>
+            {% set in_progress_orders = orders | rejectattr('orderStatus', 'in', ['Delivered', 'Canceled']) | list %}
+            {% if in_progress_orders %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dish Names</th>
+                            <th>Restaurant</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in in_progress_orders %}
+                        <tr>
+                            <td>{{ order.dish_names }}</td>
+                            <td>{{ order.restaurant_name }}</td>
+                            <td>{{ order.price }}</td>
+                            <td>{{ order.orderStatus }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No orders in progress.</p>
+            {% endif %}
+        </div>
     {% else %}
         <p>No orders available.</p>
     {% endif %}

@@ -1,9 +1,47 @@
+<!-- app/templates/client/manage_reviews.html -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Manage Reviews</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+            color: green;
+        }
+
+        .flashes li {
+            margin-bottom: 5px;
+        }
+
+        button {
+            padding: 6px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <h1>Manage Your Reviews</h1>
@@ -19,7 +57,7 @@
     {% endwith %}
 
     {% if reviews %}
-        <table border="1">
+        <table>
             <thead>
                 <tr>
                     <th>Recipe</th>
@@ -49,5 +87,7 @@
     {% endif %}
 
     <a href="{{ url_for('client.add_review') }}"><button>Add Review</button></a>
+    <br><br>
+    <a href="{{ url_for('client.panel') }}"><button>Back to Panel</button></a>
 </body>
 </html>
