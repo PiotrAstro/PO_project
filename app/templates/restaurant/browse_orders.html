@@ -88,6 +88,21 @@
     .back-link:hover {
         background-color: #e0e0e0;
     }
+
+    /* Add styling for the panel-button as a link */
+    .panel-button {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    .panel-button:hover {
+        background-color: #0056b3;
+    }
 </style>
 
 <div class="container">
@@ -105,7 +120,7 @@
             <div class="order-detail">Wait Time: {{ order.offer.waitingTime }}</div>
             <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
             <div class="order-actions">
-                <button class="panel-button" onclick="window.location.href='{{ url_for('restaurant.edit_order', order_id=order.id) }}'">Edit</button>
+                <a href="{{ url_for('restaurant.edit_order', order_id=order.id) }}" class="panel-button">Edit</a>
             </div>
         </div>
         {% else %}
@@ -123,7 +138,7 @@
             <div class="order-detail">Price: ${{ order.offer.price }}</div>
             <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
             <div class="order-actions">
-                <button class="panel-button" onclick="window.location.href='{{ url_for('restaurant.edit_order', order_id=order.id) }}'">Edit</button>
+                <a href="{{ url_for('restaurant.edit_order', order_id=order.id) }}" class="panel-button">Edit</a>
             </div>
         </div>
         {% else %}
@@ -141,7 +156,7 @@
             <div class="order-detail">Price: ${{ order.offer.price }}</div>
             <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
             <div class="order-actions">
-                <button class="panel-button" onclick="window.location.href='{{ url_for('restaurant.edit_order', order_id=order.id) }}'">Edit</button>
+                <a href="{{ url_for('restaurant.edit_order', order_id=order.id) }}" class="panel-button">Edit</a>
             </div>
         </div>
         {% else %}

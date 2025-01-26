@@ -76,6 +76,10 @@ def search_recepies():
 
     browsing_url = "/browsing-recepies" + construct_browsing_recepies_get_query(recepie_name_original, recepie_include, recepie_exclude, recepie_categories)
     recepies_conforming = browse_recepies(recepie_name_original, recepie_include, recepie_exclude, recepie_categories)
+    
+    for recipe in recepies_conforming:
+        ratings = [review.rating for review in recipe.reviews.all()]
+        recipe.average_rating = sum(ratings) / len(ratings) if ratings else 0
     return render_template(
         'main/search_recepies.html',
         goback=browsing_url,

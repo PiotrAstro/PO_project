@@ -7,6 +7,8 @@
 {% block content %}
     <h2 class="panel-title">Deliverer Panel</h2>
     <div class="button-container">
-        <button class="panel-button">Browse Deliveries</button>
+        <a href="{{ url_for('deliverer.browse_deliveries') }}">
+            <button class="panel-button">Browse Deliveries</button>
+        </a>
     </div>
 {% endblock %}

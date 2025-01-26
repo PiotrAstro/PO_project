@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .status-section {
+        margin-bottom: 30px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 15px;
+        background-color: #f9f9f9;
+    }
+    
+    .status-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #ddd;
+        color: #333;
+    }
+    
+    .delivery-card {
+        background-color: white;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+    }
+
+    .delivery-card:hover {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .delivery-detail {
+        margin: 8px 0;
+        color: #666;
+    }
+
+    .delivery-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #333;
+    }
+
+    .back-link:hover {
+        background-color: #e0e0e0;
+    }
+
+    .panel-button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .panel-button:hover {
+        background-color: #45a049;
+    }
+</style>
+
+<div class="container">
+    <a href="/deliverer" class="back-link">Back</a>
+    <h2 style="margin-bottom: 20px;">My Deliveries</h2>
+
+    <!-- In Delivery Section -->
+    <div class="status-section">
+        <div class="status-title">Active Deliveries</div>
+        {% for delivery in deliveries[DeliveryStatus.InDelivery] %}
+        <div class="delivery-card">
+            <div class="delivery-detail"><strong>Delivery #{{ delivery.id }}</strong></div>
+            <div class="delivery-detail">Order #{{ delivery.order.id }}</div>
+            <div class="delivery-detail">Client: {{ delivery.order.offer.request.client.name }} {{ delivery.order.offer.request.client.surname }}</div>
+            <div class="delivery-detail">Address: {{ delivery.order.offer.request.address }}</div>
+            <div class="delivery-detail">Restaurant: {{ delivery.order.offer.restaurant.name }}</div>
+            <div class="delivery-detail">Due by: {{ delivery.deliveryDue.strftime('%Y-%m-%d %H:%M') }}</div>
+            <div class="delivery-actions">
+                <form method="POST" action="{{ url_for('deliverer.delivery_done') }}">
+                    <input type="hidden" name="delivery_id" value="{{ delivery.id }}">
+                    <button type="submit" class="panel-button">Mark as Delivered</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <p>No active deliveries.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Completed Deliveries Section -->
+    <div class="status-section">
+        <div class="status-title">Completed Deliveries</div>
+        {% for delivery in deliveries[DeliveryStatus.Delivered] %}
+        <div class="delivery-card">
+            <div class="delivery-detail"><strong>Delivery #{{ delivery.id }}</strong></div>
+            <div class="delivery-detail">Order #{{ delivery.order.id }}</div>
+            <div class="delivery-detail">Client: {{ delivery.order.offer.request.client.name }} {{ delivery.order.offer.request.client.surname }}</div>
+            <div class="delivery-detail">Restaurant: {{ delivery.order.offer.restaurant.name }}</div>
+            <div class="delivery-detail">Delivered at: {{ delivery.deliveryTime.strftime('%Y-%m-%d %H:%M') }}</div>
+        </div>
+        {% else %}
+        <p>No completed deliveries.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

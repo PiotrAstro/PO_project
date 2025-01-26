@@ -9,7 +9,7 @@ db = SQLAlchemy()
 class DeliveryStatus(enum.Enum):
     Delivered = "Delivered"
     InDelivery = "InDelivery"
-    Waiting = "Waiting"
+    # Waiting = "Waiting"
 
 
 class OrderStatus(enum.Enum):
@@ -84,7 +84,6 @@ class Request(db.Model):
     # Relationships
     recipes = db.relationship('Recipe', secondary=recipe_request, backref='requests', lazy='dynamic')
     offers = db.relationship('Offer', backref='request', lazy='dynamic')
-
 
 class RecipeType(db.Model):
     __tablename__ = 'RecipeType'

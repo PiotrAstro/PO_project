@@ -32,25 +32,29 @@ def get_orders(restaurant_id: int) -> dict[OrderStatus, list[Orders]]:
 def get_order(order_id: int, restaurant_id: int) -> Orders | None:
     return (db.session.query(Orders)
              .join(Offer)
-             .filter(Offer.restaurant_id == restaurant_id and Orders.id == order_id)
+             .filter(Offer.restaurant_id == restaurant_id)
+             .filter(Orders.id == order_id)
              .first())
 
 def update_order(order_id: int, restaurant_id: int, status: str, notes: Optional[str] = None) -> Orders:
     order = (db.session.query(Orders)
              .join(Offer)
-             .filter(Offer.restaurant_id == restaurant_id and Orders.id == order_id)
+             .filter(Offer.restaurant_id == restaurant_id)
+             .filter(Orders.id == order_id)
              .first())
     assert order is not None
-    order.orderStatus = OrderStatus(status)
-    
+    print(order)
+    order_status = OrderStatus[status]
+    print(order_status)
     if notes is not None:
         order.notes = notes
-        
-    # If order is ready and no delivery required, mark as delivered
-    if status == OrderStatus.WaitingForDelivery.value and not order.offer.request.withDelivery:
-        order.orderStatus = OrderStatus.Delivered
-        
+    print(notes)
+    order.orderStatus = order_status
+    print(order.orderStatus)
     db.session.commit()
+    select_same_order = Orders.query.get(order_id)
+    print(select_same_order)
+    print(select_same_order.orderStatus)
     return order
 
 def update_order_with_delivery(order_id: int, deliverer_id: int, delivery_due: datetime.datetime, notes: Optional[str] = None) -> Orders:
@@ -60,7 +64,7 @@ def update_order_with_delivery(order_id: int, deliverer_id: int, delivery_due: d
     delivery = Delivery(
         order_id=order_id,
         deliverer_id=deliverer_id,
-        deliveryStatus=DeliveryStatus.Waiting,
+        deliveryStatus=DeliveryStatus.InDelivery,
         deliveryDue=delivery_due,
     )
     
@@ -76,7 +80,8 @@ def update_order_with_delivery(order_id: int, deliverer_id: int, delivery_due: d
 def cancel_order(order_id: int, restaurant_id: int) -> Orders:
     order = (db.session.query(Orders)
              .join(Offer)
-             .filter(Offer.restaurant_id == restaurant_id and Orders.id == order_id)
+             .filter(Offer.restaurant_id == restaurant_id)
+             .filter(Orders.id == order_id)
              .first())
     assert order is not None
     order.orderStatus = OrderStatus.Canceled

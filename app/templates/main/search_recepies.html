@@ -57,7 +57,7 @@
                 {% if recipe.reviews.count() > 0 %}
                 <div class="recipe-reviews">
                     <h4>Reviews:</h4>
-                    <p>Average rating: {{ recipe.reviews.with_entities(func.avg(RecipeReview.rating)).scalar()|round(1) }}/5</p>
+                    <p>Average rating: {{ recipe.average_rating }}/5</p>
                 </div>
                 {% endif %}
             </div>

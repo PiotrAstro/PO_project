@@ -138,6 +138,7 @@ def select_deliverer():
     form = CreateDeliveryForm()
     form.deliverer_id.choices = [(d.id, f"{d.name} {d.surname}") for d in restaurant.get_available_deliverers(current_user.id)]
     if form.validate_on_submit():
+        print("passed!")
         assert form.order_id.data is not None
         order_id = int(form.order_id.data)
         deliverer_id = int(form.deliverer_id.data)
@@ -146,7 +147,7 @@ def select_deliverer():
         delivery_due = datetime.datetime.combine(form.date.data, form.time.data.time())
         notes = form.notes.data
         restaurant.update_order_with_delivery(order_id, deliverer_id, delivery_due, notes)
-    
+    print("here")
     return redirect(url_for('restaurant.browse_orders'))
 
 
