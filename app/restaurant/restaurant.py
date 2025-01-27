@@ -89,7 +89,7 @@ def cancel_order(order_id: int, restaurant_id: int) -> Orders:
     db.session.commit()
     return order
 
-def get_available_deliverers(restaurant_id: int) -> list[tuple[int, str]]:
+def get_available_deliverers(restaurant_id: int):
     restaurant = Restaurant.query.get_or_404(restaurant_id)
     return restaurant.deliverers
 
