@@ -153,3 +153,41 @@ def select_deliverer():
     return redirect(url_for('restaurant.browse_orders'))
 
 
+@restaurant_bp.route('/browse_requests')
+@restaurant_required
+def browse_requests():
+    requests = get_available_requests(current_user.id)
+    return render_template('restaurant/browse_requests.html', requests=requests)
+
+
+@restaurant_bp.route('/make_offer/<int:request_id>', methods=['GET', 'POST'])
+@restaurant_required
+def make_offer(request_id):
+    if request.method == 'POST':
+        try:
+            price = float(request.form['price'])
+            notes = request.form['notes']
+            waiting_time = request.form['waitingTime']
+            restaurant_id = current_user.id
+
+            if price <= 0:
+                flash("Price must be positive.", "error")
+                return redirect(url_for('restaurant.make_offer', request_id=request_id))
+
+            # Cała logika tworzenia oferty w pliku restaurants.py
+            create_offer(
+                restaurant_id=restaurant_id,
+                request_id=request_id,
+                price=price,
+                notes=notes,
+                waiting_time=waiting_time
+            )
+
+            return redirect(url_for('restaurant.browse_requests'))
+
+        except ValueError:
+            # Gdy `float(...)` się nie powiedzie lub brakuje danych
+            flash("Invalid price value.", "error")
+            return redirect(url_for('restaurant.make_offer', request_id=request_id))
+
+    return render_template('restaurant/make_offer.html', request_id=request_id)

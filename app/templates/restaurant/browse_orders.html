@@ -27,19 +27,91 @@
     
     .order-card {
         background-color: white;
-        padding: 15px;
+        padding: 20px;
         margin-bottom: 15px;
         border: 1px solid #eee;
         border-radius: 4px;
     }
 
     .order-card:hover {
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .order-id {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .order-price {
+        font-size: 1.1em;
+        color: #27ae60;
+        font-weight: bold;
+    }
+
+    .order-section {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
     }
 
     .order-detail {
         margin: 8px 0;
         color: #666;
+    }
+
+    .recipe-list {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+    }
+
+    .recipe-item {
+        margin: 5px 0;
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .delivery-info {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #e8f5e9;
+        border-radius: 4px;
+    }
+
+    .payment-status {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+
+    .payment-completed {
+        background-color: #c8e6c9;
+        color: #2e7d32;
+    }
+
+    .payment-waiting {
+        background-color: #fff3e0;
+        color: #f57c00;
+    }
+
+    .payment-declined {
+        background-color: #ffebee;
+        color: #c62828;
     }
 
     .order-actions {
@@ -57,43 +129,10 @@
         transition: background-color 0.2s;
     }
 
-    .accept-button {
-        background-color: #4CAF50;
-        color: white;
-    }
-
-    .accept-button:hover {
-        background-color: #45a049;
-    }
-
-    .reject-button {
-        background-color: #f44336;
-        color: white;
-    }
-
-    .reject-button:hover {
-        background-color: #da190b;
-    }
-
-    .back-link {
-        display: inline-block;
-        margin-bottom: 20px;
-        padding: 8px 16px;
-        background-color: #f0f0f0;
-        border-radius: 4px;
-        text-decoration: none;
-        color: #333;
-    }
-
-    .back-link:hover {
-        background-color: #e0e0e0;
-    }
-
-    /* Add styling for the panel-button as a link */
     .panel-button {
         display: inline-block;
         padding: 8px 16px;
-        background-color: #007bff;
+        background-color: #000000;
         color: white;
         text-decoration: none;
         border-radius: 4px;
@@ -101,7 +140,21 @@
     }
 
     .panel-button:hover {
-        background-color: #0056b3;
+        background-color: #333333;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        background-color: #000000;
+        border-radius: 4px;
+        text-decoration: none;
+        color: white;
+    }
+
+    .back-link:hover {
+        background-color: #333333;
     }
 </style>
 
@@ -109,104 +162,76 @@
     <a href="/restaurant" class="back-link">Back</a>
     <h2 style="margin-bottom: 20px;">Order Management</h2>
 
-    <!-- New Orders Section -->
+    {% for status in [OrderStatus.Registered, OrderStatus.InPreparation, OrderStatus.WaitingForDelivery, OrderStatus.InDelivery, OrderStatus.Delivered, OrderStatus.Canceled] %}
     <div class="status-section">
-        <div class="status-title">New Orders</div>
-        {% for order in orders_by_status[OrderStatus.Registered] %}
+        <div class="status-title">{{ status.value }}</div>
+        {% for order in orders_by_status[status] %}
         <div class="order-card">
-            <div class="order-detail"><strong>Order #{{ order.id }}</strong></div>
-            <div class="order-detail">Client: {{ order.offer.request.client.name }}</div>
-            <div class="order-detail">Price: ${{ order.offer.price }}</div>
-            <div class="order-detail">Wait Time: {{ order.offer.waitingTime }}</div>
-            <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
+            <div class="order-header">
+                <span class="order-id">Order #{{ order.id }}</span>
+                <span class="order-price">${{ order.offer.price }}</span>
+            </div>
+
+            <!-- Client Information -->
+            <div class="order-section">
+                <div class="order-detail"><strong>Client:</strong> {{ order.offer.request.client.name }} {{ order.offer.request.client.surname }}</div>
+                <div class="order-detail"><strong>Phone:</strong> {{ order.offer.request.client.phoneNumber }}</div>
+                <div class="order-detail"><strong>Delivery Address:</strong> {{ order.offer.request.address }}</div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="order-section">
+                <div class="order-detail"><strong>Wait Time:</strong> {{ order.offer.waitingTime }}</div>
+                <div class="order-detail"><strong>With Delivery:</strong> {{ order.offer.request.withDelivery }}</div>
+                <div class="order-detail"><strong>Payment Method:</strong> {{ "Electronic" if order.offer.request.electronicPayment else "Cash" }}</div>
+                {% if order.payment %}
+                <div class="order-detail">
+                    <strong>Payment Status:</strong> 
+                    <span class="payment-status payment-{{ order.payment.paymentStatus.value.lower() }}">
+                        {{ order.payment.paymentStatus.value }}
+                    </span>
+                </div>
+                {% endif %}
+                {% if order.notes %}
+                <div class="order-detail"><strong>Notes:</strong> {{ order.notes }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Recipes -->
+            <div class="recipe-list">
+                <strong>Ordered Items:</strong>
+                {% for recipe in order.offer.request.recipes %}
+                <div class="recipe-item">
+                    <div><strong>{{ recipe.name }}</strong></div>
+                    <div style="color: #666;">{{ recipe.description[:100] }}...</div>
+                    <div><small>Type: {{ recipe.recipe_type.type }}</small></div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Delivery Information -->
+            {% if order.delivery and (status == OrderStatus.InDelivery or status == OrderStatus.Delivered) %}
+            <div class="delivery-info">
+                <div class="order-detail"><strong>Deliverer:</strong> {{ order.delivery.deliverer.name }} {{ order.delivery.deliverer.surname }}</div>
+                <div class="order-detail"><strong>Status:</strong> {{ order.delivery.deliveryStatus.value }}</div>
+                <div class="order-detail"><strong>Due By:</strong> {{ order.delivery.deliveryDue.strftime('%Y-%m-%d %H:%M') }}</div>
+                {% if order.delivery.deliveryTime %}
+                <div class="order-detail"><strong>Delivered At:</strong> {{ order.delivery.deliveryTime.strftime('%Y-%m-%d %H:%M') }}</div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            {% if status != OrderStatus.Delivered and status != OrderStatus.Canceled %}
             <div class="order-actions">
                 <a href="{{ url_for('restaurant.edit_order', order_id=order.id) }}" class="panel-button">Edit</a>
             </div>
+            {% endif %}
         </div>
         {% else %}
-        <p>No new orders at the moment.</p>
+        <p>No orders in {{ status.value }} status.</p>
         {% endfor %}
     </div>
-
-    <!-- In Preparation Section -->
-    <div class="status-section">
-        <div class="status-title">In Preparation</div>
-        {% for order in orders_by_status[OrderStatus.InPreparation] %}
-        <div class="order-card">
-            <div class="order-detail"><strong>Order #{{ order.id }}</strong></div>
-            <div class="order-detail">Client: {{ order.offer.request.client.name }}</div>
-            <div class="order-detail">Price: ${{ order.offer.price }}</div>
-            <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
-            <div class="order-actions">
-                <a href="{{ url_for('restaurant.edit_order', order_id=order.id) }}" class="panel-button">Edit</a>
-            </div>
-        </div>
-        {% else %}
-        <p>No orders in preparation.</p>
-        {% endfor %}
-    </div>
-
-    <!-- Ready for Delivery Section -->
-    <div class="status-section">
-        <div class="status-title">Ready for Delivery</div>
-        {% for order in orders_by_status[OrderStatus.WaitingForDelivery] %}
-        <div class="order-card">
-            <div class="order-detail"><strong>Order #{{ order.id }}</strong></div>
-            <div class="order-detail">Client: {{ order.offer.request.client.name }}</div>
-            <div class="order-detail">Price: ${{ order.offer.price }}</div>
-            <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
-            <div class="order-actions">
-                <a href="{{ url_for('restaurant.edit_order', order_id=order.id) }}" class="panel-button">Edit</a>
-            </div>
-        </div>
-        {% else %}
-        <p>No orders waiting for delivery.</p>
-        {% endfor %}
-    </div>
-
-    <!-- InDelivery -->
-    <div class="status-section">
-        <div class="status-title">In Delivery</div>
-        {% for order in orders_by_status[OrderStatus.InDelivery] %}
-        <div class="order-card">
-            <div class="order-detail"><strong>Order #{{ order.id }}</strong></div>
-            <div class="order-detail">Client: {{ order.offer.request.client.name }}</div>
-            <div class="order-detail">Price: ${{ order.offer.price }}</div>
-            <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
-        </div>
-        {% else %}
-        <p>No orders delivered.</p>
-        {% endfor %}
-    </div>
-
-    <!-- Delivered -->
-    <div class="status-section">
-        <div class="status-title">Delivered</div>
-        {% for order in orders_by_status[OrderStatus.Delivered] %}
-        <div class="order-card">
-            <div class="order-detail"><strong>Order #{{ order.id }}</strong></div>
-            <div class="order-detail">Client: {{ order.offer.request.client.name }}</div>
-            <div class="order-detail">Price: ${{ order.offer.price }}</div>
-            <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
-        </div>
-        {% else %}
-        <p>No orders delivered.</p>
-        {% endfor %}
-    </div>
-
-    <!-- Canceled -->
-    <div class="status-section">
-        <div class="status-title">Canceled</div>
-        {% for order in orders_by_status[OrderStatus.Canceled] %}
-        <div class="order-card">
-            <div class="order-detail"><strong>Order #{{ order.id }}</strong></div>
-            <div class="order-detail">Client: {{ order.offer.request.client.name }}</div>
-            <div class="order-detail">Price: ${{ order.offer.price }}</div>
-            <div class="order-detail">With delivery: {{ order.offer.request.withDelivery }}</div>
-        </div>
-        {% else %}
-        <p>No orders canceled.</p>
-        {% endfor %}
-    </div>
+    {% endfor %}
 </div>
 {% endblock %}
